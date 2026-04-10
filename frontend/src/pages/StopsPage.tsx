@@ -247,10 +247,15 @@ export const StopsPage: React.FC = () => {
       <div className="w-72 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col">
         <div className="p-3 border-b border-slate-200">
           <h1 className="text-sm font-bold text-slate-800 mb-2">Fleet Tracking</h1>
-          <div className="relative">
+          <div className="relative mb-2">
             <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input value={searchText} onChange={e => setSearchText(e.target.value)} placeholder="Search vehicle..."
               className="input !py-2 !pl-8 !text-xs" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Clock size={13} className="text-slate-400 shrink-0" />
+            <input type="date" value={date} onChange={e => setDate(e.target.value)}
+              className="input !py-1.5 !text-xs flex-1" />
           </div>
         </div>
 
@@ -298,12 +303,6 @@ export const StopsPage: React.FC = () => {
       {/* Center — map */}
       <div className="flex-1 relative">
         <div ref={mapContainerRef} className="w-full h-full" />
-
-        {/* Date picker overlay */}
-        <div className="absolute top-3 left-3 z-[500]">
-          <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            className="input !py-1.5 !px-3 !text-xs !w-auto shadow-md !border-slate-300 !bg-white/95 backdrop-blur-sm" />
-        </div>
 
         {/* Vehicle count badge */}
         <div className="absolute top-3 right-3 z-[500] bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md border border-slate-200 text-xs font-semibold text-slate-600 flex items-center gap-1.5">
