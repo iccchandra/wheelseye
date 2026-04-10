@@ -201,4 +201,14 @@ export const uploadApi = {
   },
 };
 
+// ─── Attendance ───────────────────────────────────────────────────────────────
+export const attendanceApi = {
+  getToday:        ()                                           => api.get('/attendance/today'),
+  getAll:          (params?: any)                               => api.get('/attendance', { params }),
+  mark:            (data: any)                                  => api.post('/attendance/mark', data),
+  getDriverHistory:(driverId: string, from?: string, to?: string) => api.get(`/attendance/driver/${driverId}`, { params: { from, to } }),
+  getQR:           (vehicleId: string)                          => api.get(`/attendance/qr/${vehicleId}`),
+  scanVehicle:     (vehicleId: string)                          => api.get(`/attendance/scan/${vehicleId}`),
+};
+
 export default api;

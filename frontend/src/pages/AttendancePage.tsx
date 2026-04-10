@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { UserCheck, UserX, Users, Clock, QrCode, Download, CalendarDays, Search } from 'lucide-react';
-import { vehicleApi, driverApi } from '../services/api';
-import api from '../services/api';
-
-const attendanceApi = {
-  getToday: () => api.get('/attendance/today'),
-  getAll: (params?: any) => api.get('/attendance', { params }),
-  getDriverHistory: (driverId: string, from?: string, to?: string) => api.get(`/attendance/driver/${driverId}`, { params: { from, to } }),
-  getQR: (vehicleId: string) => api.get(`/attendance/qr/${vehicleId}`),
-};
+import { vehicleApi, driverApi, attendanceApi } from '../services/api';
 
 type Tab = 'today' | 'history' | 'qr';
 
