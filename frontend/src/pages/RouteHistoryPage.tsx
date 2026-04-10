@@ -81,40 +81,42 @@ export const RouteHistoryPage: React.FC = () => {
   const progress = history.length ? Math.round((tick / (history.length - 1)) * 100) : 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <div style={{ background: 'var(--bg-primary)', borderBottom: '0.5px solid var(--border)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>
+    <div className="flex flex-col h-screen">
+      <div className="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center gap-3">
+        <div className="text-sm font-medium text-slate-800">
           Route history — {shipment?.trackingNumber || '...'}
         </div>
-        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+        <span className="text-[11px] text-slate-500">
           {shipment?.origin} → {shipment?.destination}
         </span>
       </div>
 
-      <div id="history-map" style={{ flex: 1 }} />
+      <div id="history-map" className="flex-1" />
 
-      <div style={{ background: 'var(--bg-primary)', borderTop: '0.5px solid var(--border)', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="bg-white border-t border-slate-200 px-4 py-3 flex flex-col gap-2">
         <input
           type="range" min={0} max={Math.max(0, history.length - 1)} value={tick} step={1}
           onChange={e => { setPlaying(false); setTick(+e.target.value); }}
-          style={{ width: '100%' }}
+          className="w-full accent-brand-600"
         />
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
+        <div className="flex items-center gap-2.5 text-xs">
           <button
             onClick={() => setPlaying(p => !p)}
-            style={{ width: 32, height: 32, borderRadius: 6, border: '0.5px solid var(--border)', background: playing ? '#185FA5' : 'var(--bg-secondary)', color: playing ? '#fff' : 'var(--text-primary)', cursor: 'pointer', fontSize: 14 }}
+            className={`w-8 h-8 rounded-md border border-slate-200 cursor-pointer text-sm flex items-center justify-center transition-colors ${
+              playing ? 'bg-brand-600 text-white border-brand-600' : 'bg-slate-50 text-slate-800'
+            }`}
           >
-            {playing ? '⏸' : '▶'}
+            {playing ? '\u23F8' : '\u25B6'}
           </button>
-          <span style={{ color: 'var(--text-primary)', fontWeight: 500, minWidth: 120 }}>
-            {current ? new Date(current.recordedAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }) : '—'}
+          <span className="text-slate-800 font-medium min-w-[120px]">
+            {current ? new Date(current.recordedAt).toLocaleString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }) : '\u2014'}
           </span>
-          <select value={speed} onChange={e => setSpeed(+e.target.value)} style={{ fontSize: 12, padding: '3px 6px', border: '0.5px solid var(--border)', borderRadius: 5, background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
+          <select value={speed} onChange={e => setSpeed(+e.target.value)} className="text-xs px-1.5 py-1 border border-slate-200 rounded-md bg-slate-50 text-slate-500">
             <option value={1}>1x</option>
             <option value={3}>3x</option>
             <option value={10}>10x</option>
           </select>
-          {current && <span style={{ color: 'var(--text-secondary)', marginLeft: 'auto' }}>{current.speed?.toFixed(0) || 0} km/h · {progress}% complete</span>}
+          {current && <span className="text-slate-500 ml-auto">{current.speed?.toFixed(0) || 0} km/h · {progress}% complete</span>}
         </div>
       </div>
     </div>

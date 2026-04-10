@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { customerApi } from '../services/api';
-
-const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  ACTIVE:   { bg: '#EAF3DE', color: '#3B6D11' },
-  INACTIVE: { bg: '#F1EFE8', color: '#5F5E5A' },
-};
+import { Plus, Edit, Trash2, Search, Users } from 'lucide-react';
 
 export const CustomersPage: React.FC = () => {
   const qc = useQueryClient();
@@ -85,97 +81,109 @@ export const CustomersPage: React.FC = () => {
     }
   };
 
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' };
-  const labelStyle: React.CSSProperties = { fontSize: 11.5, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 };
-
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <div className="page">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>Customers</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name / email / phone..." style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none', width: 240 }} />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }}>
+      <div className="page-header">
+        <h1 className="page-title">Customers</h1>
+        <div className="flex gap-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name / email / phone..." className="input pl-9 w-60" />
+          </div>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="select">
             <option value="">All statuses</option>
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive</option>
           </select>
-          <button onClick={() => { resetForm(); setShowForm(true); }} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, background: '#185FA5', color: '#fff', border: 'none', cursor: 'pointer' }}>+ Add customer</button>
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary">
+            <Plus size={15} /> Add customer
+          </button>
         </div>
       </div>
 
       {/* Form */}
       {showForm && (
-        <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '16px 20px', marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 14 }}>{editId ? 'Edit customer' : 'Add customer'}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        <div className="form-section">
+          <div className="form-section-title">{editId ? 'Edit customer' : 'Add customer'}</div>
+          <div className="form-grid">
             <div>
-              <label style={labelStyle}>Name *</label>
-              <input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Rajesh Kumar" style={inputStyle} />
+              <label className="form-label">Name *</label>
+              <input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Rajesh Kumar" className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Email</label>
-              <input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="e.g. rajesh@company.com" style={inputStyle} />
+              <label className="form-label">Email</label>
+              <input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="e.g. rajesh@company.com" className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Phone</label>
-              <input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 XXXXX XXXXX" style={inputStyle} />
+              <label className="form-label">Phone</label>
+              <input value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 XXXXX XXXXX" className="input" />
             </div>
             <div>
-              <label style={labelStyle}>GSTIN</label>
-              <input value={form.gstin} onChange={e => set('gstin', e.target.value)} placeholder="e.g. 29ABCDE1234F1Z5" style={inputStyle} />
+              <label className="form-label">GSTIN</label>
+              <input value={form.gstin} onChange={e => set('gstin', e.target.value)} placeholder="e.g. 29ABCDE1234F1Z5" className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Address</label>
-              <input value={form.address} onChange={e => set('address', e.target.value)} placeholder="Full address" style={inputStyle} />
+              <label className="form-label">Address</label>
+              <input value={form.address} onChange={e => set('address', e.target.value)} placeholder="Full address" className="input" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 20 }}>
-              <input type="checkbox" id="isActive" checked={form.isActive} onChange={e => set('isActive', e.target.checked)} />
-              <label htmlFor="isActive" style={{ fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer' }}>Active</label>
+            <div className="flex items-center gap-2.5 pt-5">
+              <input type="checkbox" id="isActive" checked={form.isActive} onChange={e => set('isActive', e.target.checked)} className="rounded" />
+              <label htmlFor="isActive" className="text-sm text-slate-700 cursor-pointer">Active</label>
             </div>
 
-            {error && <div style={{ gridColumn: '1/-1', fontSize: 13, color: '#A32D2D', padding: '8px 12px', background: '#FCEBEB', borderRadius: 7 }}>{error}</div>}
+            {error && <div className="col-span-full text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</div>}
 
-            <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, marginTop: 4 }}>
-              <button onClick={handleSubmit} disabled={createMutation.isLoading || updateMutation.isLoading} style={{ padding: '8px 20px', borderRadius: 7, background: '#185FA5', color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', opacity: (createMutation.isLoading || updateMutation.isLoading) ? 0.7 : 1 }}>
+            <div className="col-span-full flex gap-2 mt-1">
+              <button onClick={handleSubmit} disabled={createMutation.isLoading || updateMutation.isLoading} className="btn-primary">
                 {createMutation.isLoading || updateMutation.isLoading ? 'Saving...' : editId ? 'Update' : 'Add customer'}
               </button>
-              <button onClick={resetForm} style={{ padding: '8px 20px', borderRadius: 7, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={resetForm} className="btn-secondary">Cancel</button>
             </div>
           </div>
         </div>
       )}
 
       {/* Table */}
-      <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <div className="table-container">
+        <table>
           <thead>
-            <tr style={{ background: 'var(--bg-secondary)' }}>
+            <tr>
               {['Name', 'Email', 'Phone', 'Address', 'GSTIN', 'Status', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '8px 12px', fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: '0.5px solid var(--border)' }}>{h}</th>
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>Loading...</td></tr>}
-            {!isLoading && customers.length === 0 && <tr><td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No customers found</td></tr>}
+            {isLoading && <tr><td colSpan={7} className="text-center text-slate-400 py-6">Loading...</td></tr>}
+            {!isLoading && customers.length === 0 && (
+              <tr>
+                <td colSpan={7} className="text-center py-10">
+                  <Users size={32} className="mx-auto text-slate-300 mb-2" />
+                  <div className="text-slate-400 text-sm">No customers found</div>
+                </td>
+              </tr>
+            )}
             {customers.map((c: any) => {
               const active = c.isActive !== false;
-              const ss = active ? STATUS_STYLE.ACTIVE : STATUS_STYLE.INACTIVE;
               return (
-                <tr key={c.id} style={{ borderBottom: '0.5px solid var(--border)' }}>
-                  <td style={{ padding: '10px 12px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{c.name}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{c.email || '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{c.phone || '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{c.address || '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{c.gstin || '—'}</td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 7px', borderRadius: 4, background: ss.bg, color: ss.color }}>{active ? 'Active' : 'Inactive'}</span>
+                <tr key={c.id}>
+                  <td className="font-medium text-slate-800">{c.name}</td>
+                  <td className="text-xs text-slate-500">{c.email || '\u2014'}</td>
+                  <td className="text-xs text-slate-500">{c.phone || '\u2014'}</td>
+                  <td className="text-xs text-slate-500">{c.address || '\u2014'}</td>
+                  <td className="text-xs text-slate-500">{c.gstin || '\u2014'}</td>
+                  <td>
+                    <span className={active ? 'badge-green' : 'badge-gray'}>{active ? 'Active' : 'Inactive'}</span>
                   </td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      <button onClick={() => openEdit(c)} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}>Edit</button>
-                      <button onClick={() => { if (window.confirm('Delete this customer?')) deleteMutation.mutate(c.id); }} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid #FCEBEB', background: '#FCEBEB', color: '#A32D2D', cursor: 'pointer' }}>Delete</button>
+                  <td>
+                    <div className="flex gap-1">
+                      <button onClick={() => openEdit(c)} className="btn-secondary btn-sm">
+                        <Edit size={13} />
+                      </button>
+                      <button onClick={() => { if (window.confirm('Delete this customer?')) deleteMutation.mutate(c.id); }} className="btn-danger btn-sm">
+                        <Trash2 size={13} />
+                      </button>
                     </div>
                   </td>
                 </tr>

@@ -57,19 +57,19 @@ export const DashboardPage: React.FC = () => {
   const unread = getUnreadAlertCount();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <div className="flex flex-col h-screen">
 
       {/* Top bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', height: 48, background: 'var(--bg-primary)', borderBottom: '1px solid var(--border)', flexShrink: 0, boxShadow: 'var(--shadow-xs)' }}>
-        <div style={{ display: 'flex', gap: 18, alignItems: 'center', fontSize: 13 }}>
-          <StatChip color="var(--green)" count={stats?.moving ?? 0} label="moving" />
-          <StatChip color="var(--orange)" count={stats?.idle ?? 0} label="idle" />
-          <StatChip color="var(--red)" count={stats?.delayed ?? 0} label="delayed" />
-          <StatChip color="var(--accent)" count={stats?.delivered ?? 0} label="delivered" />
+      <div className="flex items-center justify-between px-4 h-12 bg-white border-b border-slate-200 shrink-0 shadow-sm">
+        <div className="flex gap-4.5 items-center text-[13px]">
+          <StatChip color="bg-emerald-500" count={stats?.moving ?? 0} label="moving" />
+          <StatChip color="bg-amber-500" count={stats?.idle ?? 0} label="idle" />
+          <StatChip color="bg-red-500" count={stats?.delayed ?? 0} label="delayed" />
+          <StatChip color="bg-brand-500" count={stats?.delivered ?? 0} label="delivered" />
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="flex gap-2 items-center">
           {unread > 0 && (
-            <button onClick={() => navigate('/alerts')} style={{ padding: '4px 12px', borderRadius: 8, background: 'var(--red-light)', color: 'var(--red)', border: 'none', fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
+            <button onClick={() => navigate('/alerts')} className="px-3 py-1 rounded-lg bg-red-50 text-red-500 text-xs font-medium hover:bg-red-100 transition-colors">
               {unread} alerts
             </button>
           )}
@@ -77,15 +77,23 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Main area: sidebar + map + detail */}
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 240px', flex: 1, overflow: 'hidden', minHeight: 0 }}>
+      <div className="grid grid-cols-[220px_1fr_240px] flex-1 overflow-hidden min-h-0">
         <ShipmentSidebar shipments={shipments} selected={selected} onSelect={s => { setSelected(s); setTab('live'); }} />
 
-        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className="flex flex-col overflow-hidden">
           {/* Map */}
-          <div style={{ position: 'relative', flex: 1, minHeight: 300 }}>
-            <div style={{ position: 'absolute', top: 10, left: 10, display: 'flex', gap: 6, zIndex: 500 }}>
+          <div className="relative flex-1 min-h-[300px]">
+            <div className="absolute top-2.5 left-2.5 flex gap-1.5 z-[500]">
               {(['live', 'history', 'geo'] as Tab[]).map(t => (
-                <button key={t} onClick={() => setTab(t)} style={{ padding: '5px 14px', borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: 'pointer', background: tab === t ? 'var(--accent)' : 'var(--bg-primary)', color: tab === t ? '#fff' : 'var(--text-secondary)', border: `1px solid ${tab === t ? 'var(--accent)' : 'var(--border)'}`, boxShadow: 'var(--shadow-sm)' }}>
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer shadow-sm border transition-colors ${
+                    tab === t
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
                   {t === 'live' ? 'Live' : t === 'history' ? 'History' : 'Geofence'}
                 </button>
               ))}
@@ -94,50 +102,50 @@ export const DashboardPage: React.FC = () => {
           </div>
 
           {/* Bottom widgets */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1, background: 'var(--border)', borderTop: '1px solid var(--border)', maxHeight: 200, overflowY: 'auto' }}>
+          <div className="grid grid-cols-3 gap-px bg-slate-200 border-t border-slate-200 max-h-[200px] overflow-y-auto">
 
             {/* IE Chart */}
-            <div style={{ background: 'var(--bg-primary)', padding: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Income vs Expense (7d)</div>
+            <div className="bg-white p-3">
+              <div className="section-label mb-2">Income vs Expense (7d)</div>
               {ieChart.labels.length > 0 ? (
-                <div style={{ display: 'flex', gap: 3, alignItems: 'flex-end', height: 80 }}>
+                <div className="flex gap-0.5 items-end h-20">
                   {ieChart.labels.map((label: string, i: number) => {
                     const maxVal = Math.max(...ieChart.income, ...ieChart.expense, 1);
                     const incH = (ieChart.income[i] / maxVal) * 70;
                     const expH = (ieChart.expense[i] / maxVal) * 70;
                     return (
-                      <div key={label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <div style={{ display: 'flex', gap: 1, alignItems: 'flex-end', height: 70 }}>
-                          <div style={{ width: 6, height: incH, background: 'var(--green)', borderRadius: 2, minHeight: 2 }} title={`Income: ₹${ieChart.income[i]}`} />
-                          <div style={{ width: 6, height: expH, background: 'var(--red)', borderRadius: 2, minHeight: 2 }} title={`Expense: ₹${ieChart.expense[i]}`} />
+                      <div key={label} className="flex-1 flex flex-col items-center gap-0.5">
+                        <div className="flex gap-px items-end h-[70px]">
+                          <div className="w-1.5 bg-emerald-500 rounded-sm min-h-[2px]" style={{ height: incH }} title={`Income: \u20B9${ieChart.income[i]}`} />
+                          <div className="w-1.5 bg-red-500 rounded-sm min-h-[2px]" style={{ height: expH }} title={`Expense: \u20B9${ieChart.expense[i]}`} />
                         </div>
-                        <div style={{ fontSize: 8, color: 'var(--text-tertiary)' }}>{label.split(' ')[0]}</div>
+                        <div className="text-[8px] text-slate-400">{label.split(' ')[0]}</div>
                       </div>
                     );
                   })}
                 </div>
-              ) : <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>No data</div>}
-              <div style={{ display: 'flex', gap: 10, marginTop: 6, fontSize: 10 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--text-tertiary)' }}><span style={{ width: 6, height: 6, borderRadius: 2, background: 'var(--green)', display: 'inline-block' }} /> Income</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: 'var(--text-tertiary)' }}><span style={{ width: 6, height: 6, borderRadius: 2, background: 'var(--red)', display: 'inline-block' }} /> Expense</span>
+              ) : <div className="text-xs text-slate-400">No data</div>}
+              <div className="flex gap-2.5 mt-1.5 text-[10px]">
+                <span className="flex items-center gap-1 text-slate-400"><span className="w-1.5 h-1.5 rounded-sm bg-emerald-500 inline-block" /> Income</span>
+                <span className="flex items-center gap-1 text-slate-400"><span className="w-1.5 h-1.5 rounded-sm bg-red-500 inline-block" /> Expense</span>
               </div>
             </div>
 
             {/* Reminders */}
-            <div style={{ background: 'var(--bg-primary)', padding: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Today's Reminders</div>
-                {todayReminders.length > 0 && <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 6px', borderRadius: 10, background: 'var(--red-light)', color: 'var(--red)' }}>{todayReminders.length}</span>}
+            <div className="bg-white p-3">
+              <div className="flex justify-between items-center mb-2">
+                <div className="section-label !mb-0">Today's Reminders</div>
+                {todayReminders.length > 0 && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-50 text-red-500">{todayReminders.length}</span>}
               </div>
-              {todayReminders.length === 0 ? <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>No reminders due today</div> : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {todayReminders.length === 0 ? <div className="text-xs text-slate-400">No reminders due today</div> : (
+                <div className="flex flex-col gap-1">
                   {todayReminders.slice(0, 5).map((r: any) => (
-                    <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div key={r.id} className="flex justify-between items-center text-xs py-1 border-b border-slate-100">
                       <div>
-                        <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{r.title}</div>
-                        <div style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{r.vehicle?.regNumber}</div>
+                        <div className="font-medium text-slate-800">{r.title}</div>
+                        <div className="text-[10px] text-slate-400">{r.vehicle?.regNumber}</div>
                       </div>
-                      <button onClick={() => markReadMut.mutate(r.id)} style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}>Done</button>
+                      <button onClick={() => markReadMut.mutate(r.id)} className="text-[10px] px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 text-slate-500 hover:bg-slate-100 cursor-pointer">Done</button>
                     </div>
                   ))}
                 </div>
@@ -145,16 +153,16 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             {/* Geofence events */}
-            <div style={{ background: 'var(--bg-primary)', padding: 12 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Geofence Events</div>
-              {geoEvents.length === 0 ? <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>No recent events</div> : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div className="bg-white p-3">
+              <div className="section-label mb-2">Geofence Events</div>
+              {geoEvents.length === 0 ? <div className="text-xs text-slate-400">No recent events</div> : (
+                <div className="flex flex-col gap-0.5">
                   {geoEvents.slice(0, 6).map((e: any) => (
-                    <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, padding: '3px 0' }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: e.type === 'GEOFENCE_ENTRY' ? 'var(--green)' : 'var(--red)' }} />
-                      <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{e.vehicleId?.slice(0, 8)}</span>
-                      <span style={{ color: 'var(--text-tertiary)' }}>{e.type === 'GEOFENCE_ENTRY' ? 'entered' : 'exited'}</span>
-                      <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-tertiary)' }}>
+                    <div key={e.id} className="flex items-center gap-1.5 text-[11px] py-0.5">
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${e.type === 'GEOFENCE_ENTRY' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                      <span className="font-medium text-slate-800">{e.vehicleId?.slice(0, 8)}</span>
+                      <span className="text-slate-400">{e.type === 'GEOFENCE_ENTRY' ? 'entered' : 'exited'}</span>
+                      <span className="ml-auto text-[10px] text-slate-400">
                         {e.createdAt ? new Date(e.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
                       </span>
                     </div>
@@ -172,8 +180,8 @@ export const DashboardPage: React.FC = () => {
 };
 
 const StatChip: React.FC<{ color: string; count: number; label: string }> = ({ color, count, label }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-secondary)' }}>
-    <span style={{ width: 7, height: 7, borderRadius: '50%', background: color, display: 'inline-block' }} />
-    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{count}</span> {label}
+  <div className="flex items-center gap-1.5 text-slate-500">
+    <span className={`w-[7px] h-[7px] rounded-full inline-block ${color}`} />
+    <span className="font-semibold text-slate-800">{count}</span> {label}
   </div>
 );

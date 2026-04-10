@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { gpsApi, vehicleApi, reportsApi } from '../services/api';
+import { Plus, ArrowLeft, MapPin, Trash2, LogIn, LogOut, Globe } from 'lucide-react';
 
 type View = 'list' | 'create' | 'events';
 
@@ -138,38 +139,42 @@ export const GeofencePage: React.FC = () => {
   // ─── Create View ──────────────────────────────────────
   if (view === 'create') {
     return (
-      <div style={{ padding: '20px 24px', height: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 16, fontWeight: 600 }}>Create Geofence</div>
-          <button onClick={() => { setView('list'); resetForm(); }} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-secondary)', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+      <div className="page h-full flex flex-col gap-4">
+        <div className="page-header">
+          <h1 className="page-title">Create Geofence</h1>
+          <button onClick={() => { setView('list'); resetForm(); }} className="btn-secondary btn-sm inline-flex items-center gap-1">
+            <ArrowLeft size={14} />
+            Cancel
+          </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16, flex: 1, minHeight: 0 }}>
+        <div className="grid grid-cols-[1fr_320px] gap-4 flex-1 min-h-0">
           {/* Map */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', background: 'var(--accent-light)', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+          <div className="flex flex-col gap-2">
+            <div className="text-xs text-slate-500 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100 flex items-center gap-2">
+              <MapPin size={14} className="text-brand-500" />
               {form.type === 'circle' ? 'Click on the map to place the geofence center' : 'Enter polygon coordinates as JSON below'}
             </div>
-            <div ref={mapContainerRef} style={{ flex: 1, borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden', minHeight: 400 }} />
+            <div ref={mapContainerRef} className="flex-1 rounded-xl border border-slate-200 overflow-hidden min-h-[400px]" />
           </div>
 
           {/* Form */}
-          <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: 12, padding: 18, overflowY: 'auto', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="card p-4 overflow-y-auto">
+            <div className="flex flex-col gap-3">
               <div>
-                <label style={lbl}>Name *</label>
-                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Delhi Warehouse" style={inp} />
+                <label className="form-label">Name *</label>
+                <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Delhi Warehouse" className="input" />
               </div>
               <div>
-                <label style={lbl}>Shape</label>
-                <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as any }))} style={inp}>
+                <label className="form-label">Shape</label>
+                <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value as any }))} className="select">
                   <option value="circle">Circle</option>
                   <option value="polygon">Polygon</option>
                 </select>
               </div>
               <div>
-                <label style={lbl}>Zone Type</label>
-                <select value={form.zoneType} onChange={e => setForm(f => ({ ...f, zoneType: e.target.value }))} style={inp}>
+                <label className="form-label">Zone Type</label>
+                <select value={form.zoneType} onChange={e => setForm(f => ({ ...f, zoneType: e.target.value }))} className="select">
                   <option value="pickup">Pickup</option>
                   <option value="delivery">Delivery</option>
                   <option value="restricted">Restricted</option>
@@ -179,33 +184,33 @@ export const GeofencePage: React.FC = () => {
 
               {form.type === 'circle' ? (
                 <>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                    <div><label style={lbl}>Latitude</label><input value={form.centerLat} onChange={e => setForm(f => ({ ...f, centerLat: e.target.value }))} style={inp} readOnly /></div>
-                    <div><label style={lbl}>Longitude</label><input value={form.centerLng} onChange={e => setForm(f => ({ ...f, centerLng: e.target.value }))} style={inp} readOnly /></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div><label className="form-label">Latitude</label><input value={form.centerLat} onChange={e => setForm(f => ({ ...f, centerLat: e.target.value }))} className="input" readOnly /></div>
+                    <div><label className="form-label">Longitude</label><input value={form.centerLng} onChange={e => setForm(f => ({ ...f, centerLng: e.target.value }))} className="input" readOnly /></div>
                   </div>
                   <div>
-                    <label style={lbl}>Radius (meters)</label>
+                    <label className="form-label">Radius (meters)</label>
                     <input type="number" value={form.radiusMeters} onChange={e => {
                       setForm(f => ({ ...f, radiusMeters: e.target.value }));
                       if (drawnRef.current && (drawnRef.current as any).setRadius) {
                         (drawnRef.current as any).setRadius(parseFloat(e.target.value) || 1000);
                       }
-                    }} min="100" step="100" style={inp} />
+                    }} min="100" step="100" className="input" />
                   </div>
                 </>
               ) : (
                 <div>
-                  <label style={lbl}>Polygon Points (JSON)</label>
+                  <label className="form-label">Polygon Points (JSON)</label>
                   <textarea value={form.polygonPoints} onChange={e => setForm(f => ({ ...f, polygonPoints: e.target.value }))}
-                    placeholder='[[lat,lng],[lat,lng],...]' style={{ ...inp, minHeight: 100, fontFamily: 'monospace', fontSize: 11 }} />
+                    placeholder='[[lat,lng],[lat,lng],...]' className="input min-h-[100px] font-mono text-[11px]" />
                 </div>
               )}
 
               <div>
-                <label style={lbl}>Assign Vehicles</label>
-                <div style={{ maxHeight: 120, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 8, padding: 6 }}>
+                <label className="form-label">Assign Vehicles</label>
+                <div className="max-h-[120px] overflow-y-auto border border-slate-200 rounded-lg p-1.5">
                   {vehicles.map((v: any) => (
-                    <label key={v.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '3px 4px', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                    <label key={v.id} className="flex items-center gap-1.5 text-xs p-1 cursor-pointer text-slate-500">
                       <input type="checkbox" checked={form.vehicleIds.includes(v.id)} onChange={() => toggleVehicle(v.id)} />
                       {v.regNumber}
                     </label>
@@ -213,13 +218,9 @@ export const GeofencePage: React.FC = () => {
                 </div>
               </div>
 
-              {error && <div style={{ fontSize: 12, color: 'var(--red)', background: 'var(--red-light)', padding: '8px 10px', borderRadius: 8 }}>{error}</div>}
+              {error && <div className="text-xs text-red-600 bg-red-50 px-2.5 py-2 rounded-lg">{error}</div>}
 
-              <button onClick={handleSubmit} disabled={createMut.isLoading} style={{
-                padding: '10px', borderRadius: 10, fontSize: 14, fontWeight: 600, border: 'none',
-                background: 'var(--accent-gradient)', color: '#fff', cursor: 'pointer',
-                boxShadow: 'var(--shadow-colored)', opacity: createMut.isLoading ? 0.7 : 1,
-              }}>
+              <button onClick={handleSubmit} disabled={createMut.isLoading} className="btn-primary w-full">
                 {createMut.isLoading ? 'Creating...' : 'Create Geofence'}
               </button>
             </div>
@@ -232,34 +233,33 @@ export const GeofencePage: React.FC = () => {
   // ─── Events View ──────────────────────────────────────
   if (view === 'events') {
     return (
-      <div style={{ padding: '20px 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <div style={{ fontSize: 16, fontWeight: 600 }}>Geofence Events</div>
-          <button onClick={() => setView('list')} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-secondary)', fontSize: 13, cursor: 'pointer' }}>Back</button>
+      <div className="page">
+        <div className="page-header">
+          <h1 className="page-title">Geofence Events</h1>
+          <button onClick={() => setView('list')} className="btn-secondary btn-sm inline-flex items-center gap-1">
+            <ArrowLeft size={14} />
+            Back
+          </button>
         </div>
-        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className="table-container">
+          <table>
             <thead><tr>
               {['Vehicle', 'Event', 'Message', 'Location', 'Time'].map(h => <th key={h}>{h}</th>)}
             </tr></thead>
             <tbody>
-              {events.length === 0 && <tr><td colSpan={5} style={{ padding: 32, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No geofence events yet</td></tr>}
+              {events.length === 0 && <tr><td colSpan={5} className="text-center text-slate-400 text-sm py-8">No geofence events yet</td></tr>}
               {events.map((e: any) => (
                 <tr key={e.id}>
-                  <td style={{ fontSize: 13, fontWeight: 500 }}>{e.vehicleId?.slice(0, 8)}...</td>
+                  <td className="font-medium">{e.vehicleId?.slice(0, 8)}...</td>
                   <td>
-                    <span style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-                      background: e.type === 'GEOFENCE_ENTRY' ? 'var(--green-light)' : 'var(--red-light)',
-                      color: e.type === 'GEOFENCE_ENTRY' ? 'var(--green)' : 'var(--red)',
-                    }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor' }} />
+                    <span className={`badge ${e.type === 'GEOFENCE_ENTRY' ? 'badge-green' : 'badge-red'}`}>
+                      {e.type === 'GEOFENCE_ENTRY' ? <LogIn size={10} /> : <LogOut size={10} />}
                       {e.type === 'GEOFENCE_ENTRY' ? 'Entered' : 'Exited'}
                     </span>
                   </td>
-                  <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{e.message}</td>
-                  <td style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{e.lat?.toFixed(4)}, {e.lng?.toFixed(4)}</td>
-                  <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{e.createdAt ? new Date(e.createdAt).toLocaleString('en-IN') : '—'}</td>
+                  <td className="text-xs text-slate-500">{e.message}</td>
+                  <td className="text-[11px] text-slate-400">{e.lat?.toFixed(4)}, {e.lng?.toFixed(4)}</td>
+                  <td className="text-xs text-slate-500">{e.createdAt ? new Date(e.createdAt).toLocaleString('en-IN') : '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -271,42 +271,48 @@ export const GeofencePage: React.FC = () => {
 
   // ─── List View ────────────────────────────────────────
   return (
-    <div style={{ padding: '20px 24px', height: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Geofences</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => setView('events')} style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-secondary)', fontSize: 13, cursor: 'pointer' }}>Events</button>
-          <button onClick={() => { resetForm(); setView('create'); }} style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: 'var(--accent-gradient)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: 'var(--shadow-colored)' }}>+ New Geofence</button>
+    <div className="page h-full flex flex-col gap-4">
+      <div className="page-header">
+        <h1 className="page-title">Geofences</h1>
+        <div className="flex gap-2">
+          <button onClick={() => setView('events')} className="btn-secondary btn-sm inline-flex items-center gap-1">
+            <Globe size={14} />
+            Events
+          </button>
+          <button onClick={() => { resetForm(); setView('create'); }} className="btn-primary btn-sm inline-flex items-center gap-1">
+            <Plus size={14} />
+            New Geofence
+          </button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 16, flex: 1, minHeight: 0 }}>
+      <div className="grid grid-cols-[1fr_340px] gap-4 flex-1 min-h-0">
         {/* Map */}
-        <div ref={listMapContainerRef} style={{ borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden', minHeight: 400 }} />
+        <div ref={listMapContainerRef} className="rounded-xl border border-slate-200 overflow-hidden min-h-[400px]" />
 
         {/* List */}
-        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: 12, overflowY: 'auto', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', position: 'sticky', top: 0, background: 'var(--bg-primary)', zIndex: 1 }}>
+        <div className="card overflow-y-auto">
+          <div className="p-3.5 px-4 border-b border-slate-200 text-sm font-semibold text-slate-500 sticky top-0 bg-white z-[1]">
             {geofences.length} geofences
           </div>
-          {isLoading && <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)' }}>Loading...</div>}
-          {!isLoading && geofences.length === 0 && <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No geofences yet. Create one to get started.</div>}
+          {isLoading && <div className="py-6 text-center text-slate-400">Loading...</div>}
+          {!isLoading && geofences.length === 0 && <div className="py-8 text-center text-slate-400 text-sm">No geofences yet. Create one to get started.</div>}
           {geofences.map((g: any) => {
             const color = ZONE_COLORS[g.zoneType] || '#f59e0b';
             return (
-              <div key={g.id} style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 10 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0, marginTop: 5 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{g.name}</span>
-                    <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 20, background: color + '18', color }}>{g.zoneType}</span>
+              <div key={g.id} className="p-3 px-4 border-b border-slate-100 flex gap-2.5">
+                <div className="w-2.5 h-2.5 rounded-full shrink-0 mt-1.5" style={{ background: color }} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-semibold text-slate-800">{g.name}</span>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: color + '18', color }}>{g.zoneType}</span>
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 2 }}>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
                     {g.type === 'circle' ? `Circle · ${g.radiusMeters}m` : `Polygon · ${g.polygonPoints?.length || 0} points`}
                   </div>
-                  <div style={{ marginTop: 6 }}>
-                    <button onClick={() => { if (confirm(`Delete "${g.name}"?`)) deleteMut.mutate(g.id); }}
-                      style={{ padding: '3px 10px', borderRadius: 6, fontSize: 11, border: '1px solid var(--border)', background: 'var(--red-light)', color: 'var(--red)', cursor: 'pointer', fontWeight: 500 }}>
+                  <div className="mt-1.5">
+                    <button onClick={() => { if (confirm(`Delete "${g.name}"?`)) deleteMut.mutate(g.id); }} className="btn-danger btn-sm inline-flex items-center gap-1 text-[11px]">
+                      <Trash2 size={11} />
                       Delete
                     </button>
                   </div>
@@ -319,6 +325,3 @@ export const GeofencePage: React.FC = () => {
     </div>
   );
 };
-
-const lbl: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 };
-const inp: React.CSSProperties = { width: '100%', padding: '8px 12px', border: '1px solid var(--border)', borderRadius: 8, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' };

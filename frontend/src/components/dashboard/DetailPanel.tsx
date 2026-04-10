@@ -9,7 +9,7 @@ interface Props {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  IN_TRANSIT: '#3B6D11', DISPATCHED: '#BA7517', DELAYED: '#A32D2D', DELIVERED: '#185FA5',
+  IN_TRANSIT: 'bg-emerald-500', DISPATCHED: 'bg-amber-500', DELAYED: 'bg-red-500', DELIVERED: 'bg-brand-600',
 };
 
 export const DetailPanel: React.FC<Props> = ({ shipment, onRefresh, onViewHistory }) => {
@@ -30,9 +30,9 @@ export const DetailPanel: React.FC<Props> = ({ shipment, onRefresh, onViewHistor
 
   if (!shipment) {
     return (
-      <div style={{ borderLeft: '0.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
-        <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>
-          <div style={{ fontSize: 28, marginBottom: 8 }}>📍</div>
+      <div className="border-l border-slate-200 flex items-center justify-center bg-white">
+        <div className="text-center text-slate-400 text-sm">
+          <div className="text-[28px] mb-2">📍</div>
           Select a truck to view details
         </div>
       </div>
@@ -41,7 +41,7 @@ export const DetailPanel: React.FC<Props> = ({ shipment, onRefresh, onViewHistor
 
   const pos = positions[shipment.vehicleId];
   const shipmentAlerts = alerts.filter(a => a.shipmentId === shipment.id).slice(0, 5);
-  const color = STATUS_COLORS[shipment.status] || '#888780';
+  const colorCls = STATUS_COLORS[shipment.status] || 'bg-slate-400';
   const prog = calculateProgress(shipment);
 
   const handlePODFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,60 +68,60 @@ export const DetailPanel: React.FC<Props> = ({ shipment, onRefresh, onViewHistor
   };
 
   return (
-    <div style={{ borderLeft: '0.5px solid var(--border)', display: 'flex', flexDirection: 'column', overflowY: 'auto', background: 'var(--bg-primary)' }}>
+    <div className="border-l border-slate-200 flex flex-col overflow-y-auto bg-white">
 
       {/* Header */}
-      <div style={{ padding: '12px 14px', borderBottom: '0.5px solid var(--border)' }}>
-        <div style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 2 }}>
+      <div className="px-3.5 py-3 border-b border-slate-200">
+        <div className="text-[13.5px] font-medium text-slate-800 mb-0.5">
           {shipment.vehicle?.regNumber || shipment.trackingNumber}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{shipment.origin} → {shipment.destination}</div>
+        <div className="text-[11px] text-slate-500">{shipment.origin} → {shipment.destination}</div>
       </div>
 
       {/* ETA */}
-      <div style={{ padding: '12px 14px', borderBottom: '0.5px solid var(--border)' }}>
-        <div style={{ fontSize: 10.5, fontWeight: 500, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>ETA</div>
-        <div style={{ fontSize: 20, fontWeight: 500, color: 'var(--text-primary)' }}>
-          {shipment.estimatedDelivery ? formatDateTime(shipment.estimatedDelivery) : '—'}
+      <div className="px-3.5 py-3 border-b border-slate-200">
+        <div className="section-label mb-1.5">ETA</div>
+        <div className="text-xl font-medium text-slate-800">
+          {shipment.estimatedDelivery ? formatDateTime(shipment.estimatedDelivery) : '\u2014'}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, marginBottom: 8 }}>
+        <div className="text-[11px] text-slate-500 mt-0.5 mb-2">
           {shipment.status === 'DELIVERED' ? 'Trip completed' : 'Estimated arrival'}
         </div>
-        <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${prog}%`, background: color, borderRadius: 2, transition: 'width .3s' }} />
+        <div className="h-1 bg-slate-200 rounded-sm overflow-hidden">
+          <div className={`h-full rounded-sm transition-all duration-300 ${colorCls}`} style={{ width: `${prog}%` }} />
         </div>
-        <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 4 }}>{prog}% complete</div>
+        <div className="text-[10px] text-slate-400 mt-1">{prog}% complete</div>
       </div>
 
       {/* Trip info */}
-      <div style={{ padding: '10px 14px', borderBottom: '0.5px solid var(--border)' }}>
-        <div style={{ fontSize: 10.5, fontWeight: 500, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Trip info</div>
+      <div className="px-3.5 py-2.5 border-b border-slate-200">
+        <div className="section-label mb-2">Trip info</div>
         {[
-          ['Driver', shipment.driver?.name || '—'],
-          ['Phone', shipment.driver?.phone || '—'],
-          ['Speed', pos ? `${pos.speed} km/h` : '—'],
-          ['Last ping', pos ? formatRelative(pos.timestamp) : '—'],
-          ['Cargo', `${shipment.cargoDescription || '—'} · ${shipment.weightMT} MT`],
+          ['Driver', shipment.driver?.name || '\u2014'],
+          ['Phone', shipment.driver?.phone || '\u2014'],
+          ['Speed', pos ? `${pos.speed} km/h` : '\u2014'],
+          ['Last ping', pos ? formatRelative(pos.timestamp) : '\u2014'],
+          ['Cargo', `${shipment.cargoDescription || '\u2014'} · ${shipment.weightMT} MT`],
           ['Tracking #', shipment.trackingNumber],
         ].map(([label, value]) => (
-          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 5 }}>
-            <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
-            <span style={{ fontWeight: 500, color: 'var(--text-primary)', textAlign: 'right', maxWidth: '55%' }}>{value}</span>
+          <div key={label} className="flex justify-between text-xs mb-1.5">
+            <span className="text-slate-500">{label}</span>
+            <span className="font-medium text-slate-800 text-right max-w-[55%]">{value}</span>
           </div>
         ))}
       </div>
 
       {/* Alerts */}
-      <div style={{ padding: '10px 14px', borderBottom: '0.5px solid var(--border)' }}>
-        <div style={{ fontSize: 10.5, fontWeight: 500, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Recent alerts</div>
+      <div className="px-3.5 py-2.5 border-b border-slate-200">
+        <div className="section-label mb-2">Recent alerts</div>
         {shipmentAlerts.length === 0 ? (
-          <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>No alerts</div>
+          <div className="text-xs text-slate-400">No alerts</div>
         ) : shipmentAlerts.map(a => (
-          <div key={a.id} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: alertColor(a.type), flexShrink: 0, marginTop: 5 }} />
+          <div key={a.id} className="flex gap-2 mb-2">
+            <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-1.5 ${alertColorCls(a.type)}`} />
             <div>
-              <div style={{ fontSize: 12, color: 'var(--text-primary)', lineHeight: 1.4 }}>{a.message}</div>
-              <div style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 2 }}>{formatRelative(a.createdAt)}</div>
+              <div className="text-xs text-slate-800 leading-snug">{a.message}</div>
+              <div className="text-[10px] text-slate-400 mt-0.5">{formatRelative(a.createdAt)}</div>
             </div>
           </div>
         ))}
@@ -129,21 +129,21 @@ export const DetailPanel: React.FC<Props> = ({ shipment, onRefresh, onViewHistor
 
       {/* Stops & Running */}
       {stops && stops.segments?.length > 0 && (
-        <div style={{ padding: '10px 14px', borderBottom: '0.5px solid var(--border)' }}>
-          <div style={{ fontSize: 10.5, fontWeight: 500, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>
+        <div className="px-3.5 py-2.5 border-b border-slate-200">
+          <div className="section-label mb-1.5">
             Today's Activity
           </div>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 8, fontSize: 11 }}>
-            <span style={{ color: 'var(--red)', fontWeight: 500 }}>{stops.stopCount} stops ({stops.totalStoppedFormatted})</span>
-            <span style={{ color: 'var(--green)', fontWeight: 500 }}>Running {stops.totalRunningFormatted}</span>
+          <div className="flex gap-2 mb-2 text-[11px]">
+            <span className="text-red-500 font-medium">{stops.stopCount} stops ({stops.totalStoppedFormatted})</span>
+            <span className="text-emerald-500 font-medium">Running {stops.totalRunningFormatted}</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div className="flex flex-col gap-0.5">
             {stops.segments.slice(0, 8).map((s: any, i: number) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: s.type === 'STOPPED' ? 'var(--red)' : 'var(--green)' }} />
-                <span style={{ fontWeight: 500, color: 'var(--text-primary)', minWidth: 55 }}>{s.type === 'STOPPED' ? 'Stopped' : 'Running'}</span>
-                <span style={{ color: 'var(--text-secondary)' }}>{s.durationFormatted}</span>
-                <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-tertiary)' }}>
+              <div key={i} className="flex items-center gap-1.5 text-[11px]">
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${s.type === 'STOPPED' ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                <span className="font-medium text-slate-800 min-w-[55px]">{s.type === 'STOPPED' ? 'Stopped' : 'Running'}</span>
+                <span className="text-slate-500">{s.durationFormatted}</span>
+                <span className="ml-auto text-[10px] text-slate-400">
                   {new Date(s.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -153,40 +153,40 @@ export const DetailPanel: React.FC<Props> = ({ shipment, onRefresh, onViewHistor
       )}
 
       {/* Actions */}
-      <div style={{ padding: '10px 14px', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      <div className="px-3.5 py-2.5 flex gap-1.5 flex-wrap">
         <button
           onClick={() => window.open(`/track/${shipment.trackingNumber}`, '_blank')}
-          style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 12, background: '#E6F1FB', color: '#0C447C', border: '0.5px solid #B5D4F4', cursor: 'pointer' }}
+          className="btn-sm btn flex-1 bg-blue-50 text-brand-700 border border-blue-200 hover:bg-blue-100"
         >
           Share tracking
         </button>
         <button
           onClick={onViewHistory}
-          style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 12, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', cursor: 'pointer' }}
+          className="btn-secondary btn-sm flex-1"
         >
           Route history
         </button>
         {showPodInput ? (
-          <div style={{ width: '100%', marginTop: 2 }}>
-            <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
+          <div className="w-full mt-0.5">
+            <div className="flex gap-1 mb-1">
               <button onClick={() => podFileRef.current?.click()} disabled={podUploading}
-                style={{ flex: 1, padding: '7px 0', borderRadius: 6, fontSize: 12, background: '#185FA5', color: '#fff', border: 'none', cursor: podUploading ? 'wait' : 'pointer' }}>
+                className="btn-primary btn-sm flex-1">
                 {podUploading ? 'Uploading...' : 'Choose file'}
               </button>
               <button onClick={() => { setShowPodInput(false); setPodUrl(''); }}
-                style={{ padding: '5px 10px', borderRadius: 6, fontSize: 12, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', cursor: 'pointer' }}>Cancel</button>
+                className="btn-secondary btn-sm">Cancel</button>
             </div>
-            <input ref={podFileRef} type="file" accept="image/*,.pdf" onChange={handlePODFile} style={{ display: 'none' }} />
-            <div style={{ display: 'flex', gap: 4 }}>
+            <input ref={podFileRef} type="file" accept="image/*,.pdf" onChange={handlePODFile} className="hidden" />
+            <div className="flex gap-1">
               <input type="url" value={podUrl} onChange={e => setPodUrl(e.target.value)} placeholder="or paste URL"
-                style={{ flex: 1, padding: '5px 8px', borderRadius: 6, fontSize: 11, border: '0.5px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' }} />
+                className="input !py-1.5 !text-[11px] flex-1" />
               <button onClick={handlePODUrl} disabled={!podUrl.trim()}
-                style={{ padding: '5px 8px', borderRadius: 6, fontSize: 11, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', cursor: 'pointer' }}>Save URL</button>
+                className="btn-secondary btn-sm">Save URL</button>
             </div>
           </div>
         ) : (
           <button onClick={() => setShowPodInput(true)}
-            style={{ width: '100%', padding: '7px 0', borderRadius: 6, fontSize: 12, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', cursor: 'pointer', marginTop: 2 }}>
+            className="btn-secondary btn-sm w-full mt-0.5">
             Upload POD
           </button>
         )}
@@ -215,9 +215,9 @@ function formatRelative(d: string) {
   return `${Math.floor(diff / 3600000)}h ago`;
 }
 
-function alertColor(type: string) {
-  if (['ROUTE_DEVIATION', 'OVERSPEED', 'DELAYED'].includes(type)) return '#A32D2D';
-  if (['IDLE', 'NIGHT_DRIVING'].includes(type)) return '#BA7517';
-  if (['DELIVERED', 'POD_UPLOADED', 'TRIP_COMPLETED'].includes(type)) return '#185FA5';
-  return '#3B6D11';
+function alertColorCls(type: string) {
+  if (['ROUTE_DEVIATION', 'OVERSPEED', 'DELAYED'].includes(type)) return 'bg-red-500';
+  if (['IDLE', 'NIGHT_DRIVING'].includes(type)) return 'bg-amber-500';
+  if (['DELIVERED', 'POD_UPLOADED', 'TRIP_COMPLETED'].includes(type)) return 'bg-brand-600';
+  return 'bg-emerald-500';
 }

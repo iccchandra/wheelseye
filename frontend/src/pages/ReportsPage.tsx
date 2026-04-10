@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { reportsApi } from '../services/api';
+import { Download, Package, CheckCircle, AlertTriangle, TrendingUp } from 'lucide-react';
 
-const fmt = (n: number) => n?.toLocaleString('en-IN') ?? '—';
+const fmt = (n: number) => n?.toLocaleString('en-IN') ?? '\u2014';
 
 export const ReportsPage: React.FC = () => {
   const [from, setFrom] = useState(() => {
@@ -31,56 +32,62 @@ export const ReportsPage: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const inputStyle: React.CSSProperties = { padding: '5px 8px', border: '0.5px solid var(--border)', borderRadius: 6, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' };
-
   return (
-    <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+    <div className="page space-y-5">
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>Reports</div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>From</label>
-          <input type="date" value={from} onChange={e => setFrom(e.target.value)} style={inputStyle} />
-          <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>To</label>
-          <input type="date" value={to} onChange={e => setTo(e.target.value)} style={inputStyle} />
-          <button onClick={exportExcel} style={{ padding: '6px 14px', borderRadius: 7, background: '#EAF3DE', color: '#3B6D11', border: '0.5px solid #C0DD97', fontSize: 13, cursor: 'pointer' }}>Export Excel</button>
+      <div className="page-header">
+        <h1 className="page-title">Reports</h1>
+        <div className="flex gap-2 items-center">
+          <label className="text-xs text-slate-500">From</label>
+          <input type="date" value={from} onChange={e => setFrom(e.target.value)} className="input w-auto" />
+          <label className="text-xs text-slate-500">To</label>
+          <input type="date" value={to} onChange={e => setTo(e.target.value)} className="input w-auto" />
+          <button onClick={exportExcel} className="btn-secondary">
+            <Download size={14} /> Export Excel
+          </button>
         </div>
       </div>
 
       {/* OTDR summary */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+      <div className="grid grid-cols-4 gap-3">
         {[
-          { label: 'Total delivered',  value: fmt(otdr.total),       color: 'var(--text-primary)' },
-          { label: 'On time',          value: fmt(otdr.onTime),      color: '#3B6D11' },
-          { label: 'Delayed',          value: fmt(otdr.delayed),     color: '#A32D2D' },
-          { label: 'OTDR %',           value: `${otdr.otdrPercent ?? 0}%`, color: otdr.otdrPercent >= 85 ? '#3B6D11' : '#A32D2D' },
+          { label: 'Total delivered',  value: fmt(otdr.total),       icon: Package,       barColor: 'bg-brand-500' },
+          { label: 'On time',          value: fmt(otdr.onTime),      icon: CheckCircle,   barColor: 'bg-emerald-500' },
+          { label: 'Delayed',          value: fmt(otdr.delayed),     icon: AlertTriangle,  barColor: 'bg-red-500' },
+          { label: 'OTDR %',           value: `${otdr.otdrPercent ?? 0}%`, icon: TrendingUp, barColor: otdr.otdrPercent >= 85 ? 'bg-emerald-500' : 'bg-red-500' },
         ].map(s => (
-          <div key={s.label} style={{ background: 'var(--bg-secondary)', borderRadius: 8, padding: '12px 14px' }}>
-            <div style={{ fontSize: 22, fontWeight: 500, color: s.color }}>{s.value}</div>
-            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3 }}>{s.label}</div>
+          <div key={s.label} className="stat-card">
+            <div className={`stat-card-bar ${s.barColor}`} />
+            <div className="flex items-center gap-3 mt-1">
+              <s.icon size={18} className="text-slate-400" />
+              <div>
+                <div className="text-xl font-semibold text-slate-800">{s.value}</div>
+                <div className="text-xs text-slate-400 mt-0.5">{s.label}</div>
+              </div>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Lane performance */}
-      <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ padding: '10px 14px', borderBottom: '0.5px solid var(--border)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Lane performance</div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <div className="table-container">
+        <div className="px-4 py-3 border-b border-slate-200 text-sm font-semibold text-slate-700">Lane performance</div>
+        <table>
           <thead>
-            <tr style={{ background: 'var(--bg-secondary)' }}>
-              {['Lane', 'Trips', 'Avg freight (₹)', 'Avg transit (hrs)'].map(h => (
-                <th key={h} style={{ padding: '7px 12px', fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: '0.5px solid var(--border)' }}>{h}</th>
+            <tr>
+              {['Lane', 'Trips', 'Avg freight (\u20B9)', 'Avg transit (hrs)'].map(h => (
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {lanes.length === 0 && <tr><td colSpan={4} style={{ padding: 20, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No data for period</td></tr>}
+            {lanes.length === 0 && <tr><td colSpan={4} className="text-center text-slate-400 py-5">No data for period</td></tr>}
             {lanes.map((l: any, i: number) => (
-              <tr key={i} style={{ borderBottom: '0.5px solid var(--border)' }}>
-                <td style={{ padding: '9px 12px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{l.lane}</td>
-                <td style={{ padding: '9px 12px', fontSize: 13, color: 'var(--text-primary)' }}>{l.count}</td>
-                <td style={{ padding: '9px 12px', fontSize: 13, color: 'var(--text-primary)' }}>₹{fmt(l.avgAmount)}</td>
-                <td style={{ padding: '9px 12px', fontSize: 13, color: 'var(--text-primary)' }}>{l.avgTransitHours}h</td>
+              <tr key={i}>
+                <td className="font-medium text-slate-800">{l.lane}</td>
+                <td className="text-slate-700">{l.count}</td>
+                <td className="text-slate-700">{'\u20B9'}{fmt(l.avgAmount)}</td>
+                <td className="text-slate-700">{l.avgTransitHours}h</td>
               </tr>
             ))}
           </tbody>
@@ -88,30 +95,33 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Carrier scorecard */}
-      <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-        <div style={{ padding: '10px 14px', borderBottom: '0.5px solid var(--border)', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>Carrier scorecard</div>
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <div className="table-container">
+        <div className="px-4 py-3 border-b border-slate-200 text-sm font-semibold text-slate-700">Carrier scorecard</div>
+        <table>
           <thead>
-            <tr style={{ background: 'var(--bg-secondary)' }}>
+            <tr>
               {['Vehicle', 'Trips', 'On time', 'Delayed', 'OTDR %'].map(h => (
-                <th key={h} style={{ padding: '7px 12px', fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: '0.5px solid var(--border)' }}>{h}</th>
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {carriers.length === 0 && <tr><td colSpan={5} style={{ padding: 20, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No data for period</td></tr>}
+            {carriers.length === 0 && <tr><td colSpan={5} className="text-center text-slate-400 py-5">No data for period</td></tr>}
             {carriers.map((c: any) => (
-              <tr key={c.vehicleId} style={{ borderBottom: '0.5px solid var(--border)' }}>
-                <td style={{ padding: '9px 12px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{c.regNumber}</td>
-                <td style={{ padding: '9px 12px', fontSize: 13, color: 'var(--text-primary)' }}>{c.trips}</td>
-                <td style={{ padding: '9px 12px', fontSize: 13, color: '#3B6D11' }}>{c.onTime}</td>
-                <td style={{ padding: '9px 12px', fontSize: 13, color: c.delayed > 0 ? '#A32D2D' : 'var(--text-secondary)' }}>{c.delayed}</td>
-                <td style={{ padding: '9px 12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${c.otdr}%`, background: c.otdr >= 85 ? '#3B6D11' : c.otdr >= 70 ? '#BA7517' : '#A32D2D', borderRadius: 2 }} />
+              <tr key={c.vehicleId}>
+                <td className="font-medium text-slate-800">{c.regNumber}</td>
+                <td className="text-slate-700">{c.trips}</td>
+                <td className="text-emerald-600">{c.onTime}</td>
+                <td className={c.delayed > 0 ? 'text-red-600' : 'text-slate-400'}>{c.delayed}</td>
+                <td>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${c.otdr >= 85 ? 'bg-emerald-500' : c.otdr >= 70 ? 'bg-amber-500' : 'bg-red-500'}`}
+                        style={{ width: `${c.otdr}%` }}
+                      />
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', minWidth: 36 }}>{c.otdr}%</span>
+                    <span className="text-xs font-medium text-slate-700 min-w-[36px]">{c.otdr}%</span>
                   </div>
                 </td>
               </tr>

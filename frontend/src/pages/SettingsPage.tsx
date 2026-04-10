@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { settingsApi } from '../services/api';
+import { Settings, Mail, FileText, Pencil } from 'lucide-react';
 
 type Tab = 'general' | 'smtp' | 'templates';
+
+const TAB_META: Record<Tab, { label: string; icon: React.ReactNode }> = {
+  general: { label: 'General', icon: <Settings size={14} /> },
+  smtp: { label: 'SMTP / Email', icon: <Mail size={14} /> },
+  templates: { label: 'Email Templates', icon: <FileText size={14} /> },
+};
 
 export const SettingsPage: React.FC = () => {
   const [tab, setTab] = useState<Tab>('general');
@@ -15,13 +22,24 @@ export const SettingsPage: React.FC = () => {
   const templates = templatesData?.data || [];
 
   return (
-    <div style={{ padding: '20px 24px' }}>
-      <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 16 }}>Settings</div>
+    <div className="page">
+      <div className="page-header">
+        <h1 className="page-title">Settings</h1>
+      </div>
 
-      <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
+      <div className="flex gap-1.5 mb-4">
         {(['general', 'smtp', 'templates'] as Tab[]).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 13, cursor: 'pointer', background: tab === t ? '#185FA5' : 'var(--bg-primary)', color: tab === t ? '#fff' : 'var(--text-secondary)', border: `0.5px solid ${tab === t ? '#185FA5' : 'var(--border)'}` }}>
-            {t === 'general' ? 'General' : t === 'smtp' ? 'SMTP / Email' : 'Email Templates'}
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`btn-sm inline-flex items-center gap-1.5 rounded-lg border cursor-pointer transition-colors ${
+              tab === t
+                ? 'bg-brand-600 text-white border-brand-600'
+                : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            {TAB_META[t].icon}
+            {TAB_META[t].label}
           </button>
         ))}
       </div>
@@ -32,9 +50,6 @@ export const SettingsPage: React.FC = () => {
     </div>
   );
 };
-
-const inputStyle: React.CSSProperties = { width: '100%', padding: '7px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' };
-const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' };
 
 const GeneralSettings: React.FC<{ settings: Record<string, string>; qc: any }> = ({ settings, qc }) => {
   const [form, setForm] = useState<Record<string, string>>({});
@@ -56,20 +71,20 @@ const GeneralSettings: React.FC<{ settings: Record<string, string>; qc: any }> =
   ];
 
   return (
-    <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, padding: 20 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+    <div className="form-section">
+      <div className="form-grid grid-cols-2">
         {fields.map(f => (
           <div key={f.key}>
-            <label style={labelStyle}>{f.label}</label>
-            <input style={inputStyle} value={form[f.key] || ''} onChange={e => set(f.key, e.target.value)} />
+            <label className="form-label">{f.label}</label>
+            <input className="input" value={form[f.key] || ''} onChange={e => set(f.key, e.target.value)} />
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 14 }}>
-        <label style={labelStyle}>Invoice Terms &amp; Conditions</label>
-        <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }} value={form.invoice_terms || ''} onChange={e => set('invoice_terms', e.target.value)} />
+      <div className="mt-3.5">
+        <label className="form-label">Invoice Terms &amp; Conditions</label>
+        <textarea className="input min-h-[80px] resize-y" value={form.invoice_terms || ''} onChange={e => set('invoice_terms', e.target.value)} />
       </div>
-      <button onClick={() => save.mutate()} style={{ marginTop: 14, padding: '8px 20px', background: '#185FA5', color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, cursor: 'pointer' }}>
+      <button onClick={() => save.mutate()} className="btn-primary mt-3.5">
         {save.isLoading ? 'Saving...' : 'Save Settings'}
       </button>
     </div>
@@ -96,17 +111,17 @@ const SmtpSettings: React.FC<{ settings: Record<string, string>; qc: any }> = ({
   ];
 
   return (
-    <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, padding: 20 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+    <div className="form-section">
+      <div className="form-grid grid-cols-2">
         {fields.map(f => (
           <div key={f.key}>
-            <label style={labelStyle}>{f.label}</label>
-            <input style={inputStyle} type={f.type || 'text'} value={form[f.key] || ''} onChange={e => set(f.key, e.target.value)} />
+            <label className="form-label">{f.label}</label>
+            <input className="input" type={f.type || 'text'} value={form[f.key] || ''} onChange={e => set(f.key, e.target.value)} />
           </div>
         ))}
         <div>
-          <label style={labelStyle}>Security</label>
-          <select style={inputStyle} value={form['smtp_security'] || ''} onChange={e => set('smtp_security', e.target.value)}>
+          <label className="form-label">Security</label>
+          <select className="select" value={form['smtp_security'] || ''} onChange={e => set('smtp_security', e.target.value)}>
             <option value="">Select...</option>
             <option value="SSL">SSL</option>
             <option value="TLS">TLS</option>
@@ -114,7 +129,7 @@ const SmtpSettings: React.FC<{ settings: Record<string, string>; qc: any }> = ({
           </select>
         </div>
       </div>
-      <button onClick={() => save.mutate()} style={{ marginTop: 14, padding: '8px 20px', background: '#185FA5', color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, cursor: 'pointer' }}>
+      <button onClick={() => save.mutate()} className="btn-primary mt-3.5">
         {save.isLoading ? 'Saving...' : 'Save SMTP Config'}
       </button>
     </div>
@@ -131,48 +146,55 @@ const TemplateSettings: React.FC<{ templates: any[]; qc: any }> = ({ templates, 
 
   if (editing) {
     return (
-      <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, padding: 20 }}>
-        <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 12 }}>Edit: {editing.name}</div>
-        <div style={{ marginBottom: 10 }}>
-          <label style={labelStyle}>Name</label>
-          <input style={inputStyle} value={editing.name || ''} onChange={e => setEditing({ ...editing, name: e.target.value })} />
+      <div className="form-section">
+        <div className="text-sm font-semibold mb-3">Edit: {editing.name}</div>
+        <div className="mb-2.5">
+          <label className="form-label">Name</label>
+          <input className="input" value={editing.name || ''} onChange={e => setEditing({ ...editing, name: e.target.value })} />
         </div>
-        <div style={{ marginBottom: 10 }}>
-          <label style={labelStyle}>Subject</label>
-          <input style={inputStyle} value={editing.subject || ''} onChange={e => setEditing({ ...editing, subject: e.target.value })} placeholder="Use {{company_name}}, {{invoice_number}}, etc." />
+        <div className="mb-2.5">
+          <label className="form-label">Subject</label>
+          <input className="input" value={editing.subject || ''} onChange={e => setEditing({ ...editing, subject: e.target.value })} placeholder="Use {{company_name}}, {{invoice_number}}, etc." />
         </div>
-        <div style={{ marginBottom: 10 }}>
-          <label style={labelStyle}>Body (HTML)</label>
-          <textarea style={{ ...inputStyle, minHeight: 200, fontFamily: 'monospace', fontSize: 12 }} value={editing.body || ''} onChange={e => setEditing({ ...editing, body: e.target.value })} placeholder="Placeholders: {{company_name}}, {{customer_name}}, {{invoice_number}}, {{amount}}, {{due_date}}, {{tracking_url}}" />
+        <div className="mb-2.5">
+          <label className="form-label">Body (HTML)</label>
+          <textarea className="input min-h-[200px] font-mono text-xs" value={editing.body || ''} onChange={e => setEditing({ ...editing, body: e.target.value })} placeholder="Placeholders: {{company_name}}, {{customer_name}}, {{invoice_number}}, {{amount}}, {{due_date}}, {{tracking_url}}" />
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => updateMut.mutate(editing)} style={{ padding: '8px 20px', background: '#185FA5', color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, cursor: 'pointer' }}>
+        <div className="flex gap-2">
+          <button onClick={() => updateMut.mutate(editing)} className="btn-primary">
             {updateMut.isLoading ? 'Saving...' : 'Save Template'}
           </button>
-          <button onClick={() => setEditing(null)} style={{ padding: '8px 20px', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+          <button onClick={() => setEditing(null)} className="btn-secondary">Cancel</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+    <div className="table-container">
+      <table>
         <thead>
-          <tr style={{ background: 'var(--bg-secondary)' }}>
+          <tr>
             {['Name', 'Subject', 'Actions'].map(h => (
-              <th key={h} style={{ padding: '8px 12px', fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: '0.5px solid var(--border)' }}>{h}</th>
+              <th key={h}>{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {templates.length === 0 && <tr><td colSpan={3} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No templates yet</td></tr>}
+          {templates.length === 0 && (
+            <tr>
+              <td colSpan={3} className="text-center text-slate-400 text-sm py-6">No templates yet</td>
+            </tr>
+          )}
           {templates.map((t: any) => (
-            <tr key={t.id} style={{ borderBottom: '0.5px solid var(--border)' }}>
-              <td style={{ padding: '10px 12px', fontSize: 13, fontWeight: 500 }}>{t.name}</td>
-              <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{t.subject || '—'}</td>
-              <td style={{ padding: '10px 12px' }}>
-                <button onClick={() => setEditing(t)} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}>Edit</button>
+            <tr key={t.id}>
+              <td className="font-medium">{t.name}</td>
+              <td className="text-xs text-slate-500">{t.subject || '—'}</td>
+              <td>
+                <button onClick={() => setEditing(t)} className="btn-ghost btn-sm inline-flex items-center gap-1">
+                  <Pencil size={12} />
+                  Edit
+                </button>
               </td>
             </tr>
           ))}

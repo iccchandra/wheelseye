@@ -12,14 +12,19 @@ const portalApi = {
 
 type View = 'login' | 'signup' | 'home' | 'book' | 'bookings';
 
-const STATUS_COLORS: Record<string, { bg: string; color: string; label: string }> = {
-  INQUIRY:    { bg: 'var(--purple-light)', color: 'var(--purple)', label: 'Inquiry' },
-  BOOKED:     { bg: 'var(--accent-light)', color: 'var(--accent)', label: 'Booked' },
-  DISPATCHED: { bg: 'var(--orange-light)', color: 'var(--orange)', label: 'Dispatched' },
-  IN_TRANSIT: { bg: 'var(--green-light)',  color: 'var(--green)',  label: 'In Transit' },
-  DELIVERED:  { bg: 'var(--accent-light)', color: 'var(--accent)', label: 'Delivered' },
-  DELAYED:    { bg: 'var(--red-light)',    color: 'var(--red)',    label: 'Delayed' },
-  CANCELLED:  { bg: 'var(--bg-tertiary)',  color: 'var(--text-tertiary)', label: 'Cancelled' },
+const STATUS_BADGE: Record<string, string> = {
+  INQUIRY:    'badge-purple',
+  BOOKED:     'badge-blue',
+  DISPATCHED: 'badge-orange',
+  IN_TRANSIT: 'badge-green',
+  DELIVERED:  'badge-blue',
+  DELAYED:    'badge-red',
+  CANCELLED:  'badge-gray',
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  INQUIRY: 'Inquiry', BOOKED: 'Booked', DISPATCHED: 'Dispatched',
+  IN_TRANSIT: 'In Transit', DELIVERED: 'Delivered', DELAYED: 'Delayed', CANCELLED: 'Cancelled',
 };
 
 export const CustomerPortalPage: React.FC = () => {
@@ -79,38 +84,35 @@ export const CustomerPortalPage: React.FC = () => {
     setCustomer(null); setView('login');
   };
 
-  const input: React.CSSProperties = { width: '100%', padding: '10px 14px', border: '1px solid var(--border)', borderRadius: 10, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' };
-  const btn: React.CSSProperties = { width: '100%', padding: '12px', borderRadius: 10, background: 'linear-gradient(135deg, #1a6dcc, #0d4a8a)', color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', boxShadow: '0 2px 8px rgba(26,109,204,0.25)' };
-
   // Auth screens
   if (view === 'login' || view === 'signup') {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, var(--bg-secondary), #e8f0fb)' }}>
-        <div style={{ background: 'var(--bg-primary)', borderRadius: 20, padding: '36px 32px', width: 380, boxShadow: 'var(--shadow-lg)', animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ textAlign: 'center', marginBottom: 24 }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: 'linear-gradient(135deg, #1a6dcc, #0d4a8a)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 18, fontWeight: 700, marginBottom: 10 }}>FT</div>
-            <div style={{ fontSize: 18, fontWeight: 600 }}>FreightTrack</div>
-            <div style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>Customer Portal</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="bg-white rounded-2xl px-8 py-9 w-[380px] shadow-card-hover animate-fade-in">
+          <div className="text-center mb-6">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-800 inline-flex items-center justify-center text-white text-lg font-bold mb-2.5">FT</div>
+            <div className="text-lg font-semibold text-slate-800">FreightTrack</div>
+            <div className="text-sm text-slate-400">Customer Portal</div>
           </div>
 
           {view === 'signup' && (
             <>
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" style={{ ...input, marginBottom: 10 }} />
-              <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="Phone" style={{ ...input, marginBottom: 10 }} />
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Full name" className="input mb-2.5" />
+              <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="Phone" className="input mb-2.5" />
             </>
           )}
-          <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="Email" style={{ ...input, marginBottom: 10 }} />
-          <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Password" onKeyDown={e => e.key === 'Enter' && handleAuth(view === 'signup')} style={{ ...input, marginBottom: 14 }} />
+          <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="Email" className="input mb-2.5" />
+          <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Password" onKeyDown={e => e.key === 'Enter' && handleAuth(view === 'signup')} className="input mb-3.5" />
 
-          {error && <div style={{ fontSize: 13, color: 'var(--red)', padding: '8px 12px', background: 'var(--red-light)', borderRadius: 8, marginBottom: 10 }}>{error}</div>}
+          {error && <div className="text-sm text-red-500 px-3 py-2 bg-red-50 rounded-lg mb-2.5">{error}</div>}
 
-          <button onClick={() => handleAuth(view === 'signup')} disabled={loading} style={{ ...btn, opacity: loading ? 0.7 : 1 }}>
+          <button onClick={() => handleAuth(view === 'signup')} disabled={loading} className="btn-primary w-full shadow-btn-primary">
             {loading ? 'Please wait...' : view === 'signup' ? 'Create account' : 'Sign in'}
           </button>
 
-          <div style={{ textAlign: 'center', marginTop: 14, fontSize: 13, color: 'var(--text-secondary)' }}>
+          <div className="text-center mt-3.5 text-sm text-slate-500">
             {view === 'login' ? "Don't have an account? " : 'Already have an account? '}
-            <button onClick={() => { setView(view === 'login' ? 'signup' : 'login'); setError(''); }} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 500, cursor: 'pointer', fontSize: 13 }}>
+            <button onClick={() => { setView(view === 'login' ? 'signup' : 'login'); setError(''); }} className="bg-transparent border-none text-brand-600 font-medium cursor-pointer text-sm hover:underline">
               {view === 'login' ? 'Sign up' : 'Sign in'}
             </button>
           </div>
@@ -122,32 +124,32 @@ export const CustomerPortalPage: React.FC = () => {
   // Home
   if (view === 'home') {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-secondary)' }}>
-        <div style={{ background: 'var(--bg-primary)', padding: '14px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #1a6dcc, #0d4a8a)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700 }}>FT</div>
-            <span style={{ fontSize: 15, fontWeight: 600 }}>FreightTrack</span>
+      <div className="min-h-screen bg-slate-50">
+        <div className="bg-white px-6 py-3.5 flex justify-between items-center border-b border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-brand-800 flex items-center justify-center text-white text-xs font-bold">FT</div>
+            <span className="text-[15px] font-semibold text-slate-800">FreightTrack</span>
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Hi, {customer?.name}</span>
-            <button onClick={logout} style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}>Logout</button>
+          <div className="flex gap-2 items-center">
+            <span className="text-sm text-slate-500">Hi, {customer?.name}</span>
+            <button onClick={logout} className="btn-secondary btn-sm">Logout</button>
           </div>
         </div>
-        <div style={{ maxWidth: 600, margin: '40px auto', padding: '0 20px' }}>
-          <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 24 }}>What would you like to do?</div>
-          <div style={{ display: 'grid', gap: 12 }}>
+        <div className="max-w-[600px] mx-auto mt-10 px-5">
+          <div className="text-[22px] font-semibold text-slate-800 mb-6">What would you like to do?</div>
+          <div className="grid gap-3">
             {[
-              { label: 'Book a shipment', desc: 'Create a new freight booking', action: loadVehicles, color: 'var(--accent)' },
-              { label: 'My bookings', desc: 'View your booking history and status', action: loadBookings, color: 'var(--green)' },
-              { label: 'Track shipment', desc: 'Track using tracking number', action: () => navigate('/track/'), color: 'var(--orange)' },
+              { label: 'Book a shipment', desc: 'Create a new freight booking', action: loadVehicles, dotColor: 'bg-brand-500' },
+              { label: 'My bookings', desc: 'View your booking history and status', action: loadBookings, dotColor: 'bg-emerald-500' },
+              { label: 'Track shipment', desc: 'Track using tracking number', action: () => navigate('/track/'), dotColor: 'bg-amber-500' },
             ].map(item => (
-              <button key={item.label} onClick={item.action} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 20px', borderRadius: 14, border: '1px solid var(--border)', background: 'var(--bg-primary)', cursor: 'pointer', textAlign: 'left', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ width: 44, height: 44, borderRadius: 10, background: item.color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color }} />
+              <button key={item.label} onClick={item.action} className="card flex items-center gap-3.5 px-5 py-4.5 text-left cursor-pointer hover:shadow-card-hover transition-shadow">
+                <div className="w-11 h-11 rounded-[10px] bg-slate-50 flex items-center justify-center">
+                  <div className={`w-2.5 h-2.5 rounded-full ${item.dotColor}`} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>{item.desc}</div>
+                  <div className="text-[15px] font-semibold text-slate-800">{item.label}</div>
+                  <div className="text-xs text-slate-500 mt-0.5">{item.desc}</div>
                 </div>
               </button>
             ))}
@@ -160,26 +162,26 @@ export const CustomerPortalPage: React.FC = () => {
   // Book
   if (view === 'book') {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-secondary)', padding: 24 }}>
-        <button onClick={() => setView('home')} style={{ marginBottom: 16, padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 13 }}>Back</button>
-        <div style={{ maxWidth: 600, margin: '0 auto', background: 'var(--bg-primary)', borderRadius: 16, padding: 24, boxShadow: 'var(--shadow-md)' }}>
-          <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 20 }}>New Booking</div>
-          <div style={{ display: 'grid', gap: 12 }}>
-            <div><label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Origin *</label><input value={bookForm.origin} onChange={e => setBookForm(f => ({ ...f, origin: e.target.value }))} placeholder="Pickup location" style={input} /></div>
-            <div><label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Destination *</label><input value={bookForm.destination} onChange={e => setBookForm(f => ({ ...f, destination: e.target.value }))} placeholder="Delivery location" style={input} /></div>
-            <div><label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Cargo Description</label><input value={bookForm.cargoDescription} onChange={e => setBookForm(f => ({ ...f, cargoDescription: e.target.value }))} placeholder="What are you shipping?" style={input} /></div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div><label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Weight (MT)</label><input type="number" value={bookForm.weightMT} onChange={e => setBookForm(f => ({ ...f, weightMT: e.target.value }))} style={input} /></div>
-              <div><label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Pickup Date</label><input type="date" value={bookForm.scheduledPickup} onChange={e => setBookForm(f => ({ ...f, scheduledPickup: e.target.value }))} style={input} /></div>
+      <div className="min-h-screen bg-slate-50 p-6">
+        <button onClick={() => setView('home')} className="btn-secondary btn-sm mb-4">Back</button>
+        <div className="max-w-[600px] mx-auto card p-6">
+          <div className="text-lg font-semibold text-slate-800 mb-5">New Booking</div>
+          <div className="grid gap-3">
+            <div><label className="form-label">Origin *</label><input value={bookForm.origin} onChange={e => setBookForm(f => ({ ...f, origin: e.target.value }))} placeholder="Pickup location" className="input" /></div>
+            <div><label className="form-label">Destination *</label><input value={bookForm.destination} onChange={e => setBookForm(f => ({ ...f, destination: e.target.value }))} placeholder="Delivery location" className="input" /></div>
+            <div><label className="form-label">Cargo Description</label><input value={bookForm.cargoDescription} onChange={e => setBookForm(f => ({ ...f, cargoDescription: e.target.value }))} placeholder="What are you shipping?" className="input" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><label className="form-label">Weight (MT)</label><input type="number" value={bookForm.weightMT} onChange={e => setBookForm(f => ({ ...f, weightMT: e.target.value }))} className="input" /></div>
+              <div><label className="form-label">Pickup Date</label><input type="date" value={bookForm.scheduledPickup} onChange={e => setBookForm(f => ({ ...f, scheduledPickup: e.target.value }))} className="input" /></div>
             </div>
-            <div><label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Preferred Vehicle</label>
-              <select value={bookForm.vehicleId} onChange={e => setBookForm(f => ({ ...f, vehicleId: e.target.value }))} style={input}>
+            <div><label className="form-label">Preferred Vehicle</label>
+              <select value={bookForm.vehicleId} onChange={e => setBookForm(f => ({ ...f, vehicleId: e.target.value }))} className="select">
                 <option value="">Any available</option>
                 {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.regNumber} — {v.type} ({v.capacityMT}MT)</option>)}
               </select>
             </div>
-            {error && <div style={{ fontSize: 13, color: 'var(--red)', padding: '8px 12px', background: 'var(--red-light)', borderRadius: 8 }}>{error}</div>}
-            <button onClick={handleBook} disabled={loading} style={{ ...btn, opacity: loading ? 0.7 : 1 }}>{loading ? 'Submitting...' : 'Submit Booking'}</button>
+            {error && <div className="text-sm text-red-500 px-3 py-2 bg-red-50 rounded-lg">{error}</div>}
+            <button onClick={handleBook} disabled={loading} className="btn-primary w-full">{loading ? 'Submitting...' : 'Submit Booking'}</button>
           </div>
         </div>
       </div>
@@ -188,26 +190,27 @@ export const CustomerPortalPage: React.FC = () => {
 
   // Bookings
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-secondary)', padding: 24 }}>
-      <button onClick={() => setView('home')} style={{ marginBottom: 16, padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 13 }}>Back</button>
-      <div style={{ maxWidth: 700, margin: '0 auto' }}>
-        <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>My Bookings</div>
-        {bookings.length === 0 ? <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-tertiary)', fontSize: 14 }}>No bookings yet</div> : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div className="min-h-screen bg-slate-50 p-6">
+      <button onClick={() => setView('home')} className="btn-secondary btn-sm mb-4">Back</button>
+      <div className="max-w-[700px] mx-auto">
+        <div className="text-lg font-semibold text-slate-800 mb-4">My Bookings</div>
+        {bookings.length === 0 ? <div className="text-center py-10 text-slate-400 text-sm">No bookings yet</div> : (
+          <div className="flex flex-col gap-2.5">
             {bookings.map((b: any) => {
-              const sc = STATUS_COLORS[b.status] || STATUS_COLORS.INQUIRY;
+              const badgeCls = STATUS_BADGE[b.status] || 'badge-gray';
+              const label = STATUS_LABEL[b.status] || b.status;
               return (
-                <div key={b.id} style={{ background: 'var(--bg-primary)', borderRadius: 12, padding: '16px 18px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{b.trackingNumber}</span>
-                    <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 6, background: sc.bg, color: sc.color }}>{sc.label}</span>
+                <div key={b.id} className="card px-4.5 py-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-semibold text-slate-800">{b.trackingNumber}</span>
+                    <span className={badgeCls}>{label}</span>
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 4 }}>{b.origin} → {b.destination}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
+                  <div className="text-sm text-slate-500 mb-1">{b.origin} → {b.destination}</div>
+                  <div className="text-xs text-slate-400">
                     {b.cargoDescription} {b.weightMT ? `· ${b.weightMT}MT` : ''} · {new Date(b.createdAt).toLocaleDateString('en-IN')}
                   </div>
                   {b.trackingNumber && (
-                    <button onClick={() => navigate(`/track/${b.trackingNumber}`)} style={{ marginTop: 8, padding: '5px 12px', borderRadius: 6, fontSize: 12, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }}>Track</button>
+                    <button onClick={() => navigate(`/track/${b.trackingNumber}`)} className="btn-secondary btn-sm mt-2 text-brand-600">Track</button>
                   )}
                 </div>
               );

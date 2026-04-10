@@ -52,81 +52,79 @@ export const CreateShipmentPage: React.FC = () => {
     });
   };
 
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' };
-  const labelStyle: React.CSSProperties = { fontSize: 11.5, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 };
-  const sectionStyle: React.CSSProperties = { fontSize: 12, fontWeight: 500, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '.06em', margin: '20px 0 10px' };
-
   return (
-    <div style={{ padding: '20px 24px', maxWidth: 720 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-        <button onClick={() => navigate('/shipments')} style={{ background: 'none', border: '0.5px solid var(--border)', borderRadius: 6, padding: '5px 10px', fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer' }}>← Back</button>
-        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>New shipment</div>
+    <div className="page max-w-[720px]">
+      <div className="page-header">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate('/shipments')} className="btn-secondary btn-sm">← Back</button>
+          <h1 className="page-title">New shipment</h1>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="grid grid-cols-2 gap-4">
 
-        <div style={{ gridColumn: '1/-1' }}><div style={sectionStyle}>Route</div></div>
+        <div className="col-span-full"><div className="form-section-title !border-0 !p-0 !mb-0 mt-1">Route</div></div>
 
         <div>
-          <label style={labelStyle}>Origin city *</label>
-          <input value={form.origin} onChange={e => set('origin', e.target.value)} placeholder="e.g. Hyderabad" style={inputStyle} />
+          <label className="form-label">Origin city *</label>
+          <input value={form.origin} onChange={e => set('origin', e.target.value)} placeholder="e.g. Hyderabad" className="input" />
         </div>
         <div>
-          <label style={labelStyle}>Destination city *</label>
-          <input value={form.destination} onChange={e => set('destination', e.target.value)} placeholder="e.g. Delhi" style={inputStyle} />
+          <label className="form-label">Destination city *</label>
+          <input value={form.destination} onChange={e => set('destination', e.target.value)} placeholder="e.g. Delhi" className="input" />
         </div>
         <div>
-          <label style={labelStyle}>Origin lat, lng</label>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <input value={form.originLat} onChange={e => set('originLat', e.target.value)} placeholder="Lat" style={{ ...inputStyle, width: '50%' }} />
-            <input value={form.originLng} onChange={e => set('originLng', e.target.value)} placeholder="Lng" style={{ ...inputStyle, width: '50%' }} />
+          <label className="form-label">Origin lat, lng</label>
+          <div className="flex gap-1.5">
+            <input value={form.originLat} onChange={e => set('originLat', e.target.value)} placeholder="Lat" className="input w-1/2" />
+            <input value={form.originLng} onChange={e => set('originLng', e.target.value)} placeholder="Lng" className="input w-1/2" />
           </div>
         </div>
         <div>
-          <label style={labelStyle}>Destination lat, lng</label>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <input value={form.destinationLat} onChange={e => set('destinationLat', e.target.value)} placeholder="Lat" style={{ ...inputStyle, width: '50%' }} />
-            <input value={form.destinationLng} onChange={e => set('destinationLng', e.target.value)} placeholder="Lng" style={{ ...inputStyle, width: '50%' }} />
+          <label className="form-label">Destination lat, lng</label>
+          <div className="flex gap-1.5">
+            <input value={form.destinationLat} onChange={e => set('destinationLat', e.target.value)} placeholder="Lat" className="input w-1/2" />
+            <input value={form.destinationLng} onChange={e => set('destinationLng', e.target.value)} placeholder="Lng" className="input w-1/2" />
           </div>
         </div>
 
-        <div style={{ gridColumn: '1/-1' }}><div style={sectionStyle}>Cargo</div></div>
+        <div className="col-span-full"><div className="form-section-title !border-0 !p-0 !mb-0 mt-1">Cargo</div></div>
 
         <div>
-          <label style={labelStyle}>Cargo description *</label>
-          <input value={form.cargoDescription} onChange={e => set('cargoDescription', e.target.value)} placeholder="e.g. Electronics, FMCG" style={inputStyle} />
+          <label className="form-label">Cargo description *</label>
+          <input value={form.cargoDescription} onChange={e => set('cargoDescription', e.target.value)} placeholder="e.g. Electronics, FMCG" className="input" />
         </div>
         <div>
-          <label style={labelStyle}>Truck type</label>
-          <select value={form.truckType} onChange={e => set('truckType', e.target.value)} style={inputStyle}>
+          <label className="form-label">Truck type</label>
+          <select value={form.truckType} onChange={e => set('truckType', e.target.value)} className="select">
             {TRUCK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div>
-          <label style={labelStyle}>Weight (MT) *</label>
-          <input type="number" value={form.weightMT} onChange={e => set('weightMT', e.target.value)} placeholder="e.g. 12" min="0.1" step="0.1" style={inputStyle} />
+          <label className="form-label">Weight (MT) *</label>
+          <input type="number" value={form.weightMT} onChange={e => set('weightMT', e.target.value)} placeholder="e.g. 12" min="0.1" step="0.1" className="input" />
         </div>
         <div>
-          <label style={labelStyle}>Freight amount (₹)</label>
-          <input type="number" value={form.quotedAmount} onChange={e => set('quotedAmount', e.target.value)} placeholder="e.g. 48000" style={inputStyle} />
+          <label className="form-label">Freight amount (&#8377;)</label>
+          <input type="number" value={form.quotedAmount} onChange={e => set('quotedAmount', e.target.value)} placeholder="e.g. 48000" className="input" />
         </div>
 
-        <div style={{ gridColumn: '1/-1' }}><div style={sectionStyle}>Schedule</div></div>
+        <div className="col-span-full"><div className="form-section-title !border-0 !p-0 !mb-0 mt-1">Schedule</div></div>
 
         <div>
-          <label style={labelStyle}>Pickup date &amp; time</label>
-          <input type="datetime-local" value={form.scheduledPickup} onChange={e => set('scheduledPickup', e.target.value)} style={inputStyle} />
+          <label className="form-label">Pickup date &amp; time</label>
+          <input type="datetime-local" value={form.scheduledPickup} onChange={e => set('scheduledPickup', e.target.value)} className="input" />
         </div>
         <div>
-          <label style={labelStyle}>Estimated delivery</label>
-          <input type="datetime-local" value={form.estimatedDelivery} onChange={e => set('estimatedDelivery', e.target.value)} style={inputStyle} />
+          <label className="form-label">Estimated delivery</label>
+          <input type="datetime-local" value={form.estimatedDelivery} onChange={e => set('estimatedDelivery', e.target.value)} className="input" />
         </div>
 
-        <div style={{ gridColumn: '1/-1' }}><div style={sectionStyle}>Assign vehicle &amp; driver</div></div>
+        <div className="col-span-full"><div className="form-section-title !border-0 !p-0 !mb-0 mt-1">Assign vehicle &amp; driver</div></div>
 
         <div>
-          <label style={labelStyle}>Vehicle</label>
-          <select value={form.vehicleId} onChange={e => set('vehicleId', e.target.value)} style={inputStyle}>
+          <label className="form-label">Vehicle</label>
+          <select value={form.vehicleId} onChange={e => set('vehicleId', e.target.value)} className="select">
             <option value="">— Select vehicle —</option>
             {vehicles.map((v: any) => (
               <option key={v.id} value={v.id}>{v.regNumber} · {v.type} · {v.capacityMT}MT</option>
@@ -134,8 +132,8 @@ export const CreateShipmentPage: React.FC = () => {
           </select>
         </div>
         <div>
-          <label style={labelStyle}>Driver</label>
-          <select value={form.driverId} onChange={e => set('driverId', e.target.value)} style={inputStyle}>
+          <label className="form-label">Driver</label>
+          <select value={form.driverId} onChange={e => set('driverId', e.target.value)} className="select">
             <option value="">— Select driver —</option>
             {drivers.map((d: any) => (
               <option key={d.id} value={d.id}>{d.name} · {d.phone}</option>
@@ -143,40 +141,40 @@ export const CreateShipmentPage: React.FC = () => {
           </select>
         </div>
 
-        <div style={{ gridColumn: '1/-1' }}><div style={sectionStyle}>Consignee &amp; insurance</div></div>
+        <div className="col-span-full"><div className="form-section-title !border-0 !p-0 !mb-0 mt-1">Consignee &amp; insurance</div></div>
 
         <div>
-          <label style={labelStyle}>Consignee name</label>
-          <input value={form.consigneeName} onChange={e => set('consigneeName', e.target.value)} placeholder="Recipient name" style={inputStyle} />
+          <label className="form-label">Consignee name</label>
+          <input value={form.consigneeName} onChange={e => set('consigneeName', e.target.value)} placeholder="Recipient name" className="input" />
         </div>
         <div>
-          <label style={labelStyle}>Consignee phone</label>
-          <input value={form.consigneePhone} onChange={e => set('consigneePhone', e.target.value)} placeholder="+91 XXXXX XXXXX" style={inputStyle} />
+          <label className="form-label">Consignee phone</label>
+          <input value={form.consigneePhone} onChange={e => set('consigneePhone', e.target.value)} placeholder="+91 XXXXX XXXXX" className="input" />
         </div>
         <div>
-          <label style={labelStyle}>Shipper phone</label>
-          <input value={form.shipperPhone} onChange={e => set('shipperPhone', e.target.value)} placeholder="+91 XXXXX XXXXX" style={inputStyle} />
+          <label className="form-label">Shipper phone</label>
+          <input value={form.shipperPhone} onChange={e => set('shipperPhone', e.target.value)} placeholder="+91 XXXXX XXXXX" className="input" />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 20 }}>
-          <input type="checkbox" id="insurance" checked={form.insuranceEnabled} onChange={e => set('insuranceEnabled', e.target.checked)} />
-          <label htmlFor="insurance" style={{ fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer' }}>Enable trip insurance</label>
+        <div className="flex items-center gap-2.5 pt-5">
+          <input type="checkbox" id="insurance" checked={form.insuranceEnabled} onChange={e => set('insuranceEnabled', e.target.checked)} className="accent-brand-600" />
+          <label htmlFor="insurance" className="text-sm text-slate-800 cursor-pointer">Enable trip insurance</label>
           {form.insuranceEnabled && (
-            <input type="number" value={form.insuranceCoverage} onChange={e => set('insuranceCoverage', e.target.value)} placeholder="Coverage ₹" style={{ ...inputStyle, width: 140 }} />
+            <input type="number" value={form.insuranceCoverage} onChange={e => set('insuranceCoverage', e.target.value)} placeholder="Coverage &#8377;" className="input w-36" />
           )}
         </div>
 
-        <div style={{ gridColumn: '1/-1' }}>
-          <label style={labelStyle}>Internal notes</label>
-          <textarea value={form.internalNotes} onChange={e => set('internalNotes', e.target.value)} rows={2} placeholder="Any special handling instructions..." style={{ ...inputStyle, resize: 'vertical' }} />
+        <div className="col-span-full">
+          <label className="form-label">Internal notes</label>
+          <textarea value={form.internalNotes} onChange={e => set('internalNotes', e.target.value)} rows={2} placeholder="Any special handling instructions..." className="input resize-y" />
         </div>
 
-        {error && <div style={{ gridColumn: '1/-1', fontSize: 13, color: '#A32D2D', padding: '8px 12px', background: '#FCEBEB', borderRadius: 7 }}>{error}</div>}
+        {error && <div className="col-span-full text-sm text-red-700 px-3 py-2 bg-red-50 rounded-lg">{error}</div>}
 
-        <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, marginTop: 8 }}>
-          <button onClick={handleSubmit} disabled={mutation.isLoading} style={{ flex: 1, padding: '10px', borderRadius: 7, background: '#185FA5', color: '#fff', border: 'none', fontSize: 14, fontWeight: 500, cursor: mutation.isLoading ? 'not-allowed' : 'pointer', opacity: mutation.isLoading ? 0.7 : 1 }}>
+        <div className="col-span-full flex gap-2 mt-2">
+          <button onClick={handleSubmit} disabled={mutation.isLoading} className="btn-primary flex-1">
             {mutation.isLoading ? 'Creating...' : 'Create shipment'}
           </button>
-          <button onClick={() => navigate('/shipments')} style={{ padding: '10px 20px', borderRadius: 7, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', fontSize: 14, cursor: 'pointer' }}>
+          <button onClick={() => navigate('/shipments')} className="btn-secondary">
             Cancel
           </button>
         </div>

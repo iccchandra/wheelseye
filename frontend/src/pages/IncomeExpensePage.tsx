@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { incomeExpenseApi, vehicleApi } from '../services/api';
-
-const TYPE_STYLE: Record<string, { bg: string; color: string }> = {
-  INCOME:  { bg: '#EAF3DE', color: '#3B6D11' },
-  EXPENSE: { bg: '#FCEBEB', color: '#A32D2D' },
-};
+import { Plus, Edit, Trash2, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 
 const CATEGORIES = [
   'FUEL', 'TOLL', 'MAINTENANCE', 'SALARY', 'INSURANCE', 'EMI', 'FREIGHT',
@@ -112,130 +108,136 @@ export const IncomeExpensePage: React.FC = () => {
   const totalExpense = report.totalExpense || 0;
   const netProfit = totalIncome - totalExpense;
 
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' };
-  const labelStyle: React.CSSProperties = { fontSize: 11.5, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 };
-
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <div className="page">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>Income &amp; expenses</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }}>
+      <div className="page-header">
+        <h1 className="page-title">Income &amp; expenses</h1>
+        <div className="flex gap-2">
+          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="select">
             <option value="">All types</option>
             <option value="INCOME">Income</option>
             <option value="EXPENSE">Expense</option>
           </select>
-          <select value={vehicleFilter} onChange={e => setVehicleFilter(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }}>
+          <select value={vehicleFilter} onChange={e => setVehicleFilter(e.target.value)} className="select">
             <option value="">All vehicles</option>
             {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.regNumber}</option>)}
           </select>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }} />
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }} />
-          <button onClick={() => { resetForm(); setShowForm(true); }} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, background: '#185FA5', color: '#fff', border: 'none', cursor: 'pointer' }}>+ Add entry</button>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="input w-auto" />
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="input w-auto" />
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary">
+            <Plus size={15} /> Add entry
+          </button>
         </div>
       </div>
 
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+      <div className="grid grid-cols-3 gap-3 mb-4">
         {[
-          { label: 'Total income', value: `₹${totalIncome.toLocaleString('en-IN')}`, color: '#3B6D11', bg: '#EAF3DE' },
-          { label: 'Total expense', value: `₹${totalExpense.toLocaleString('en-IN')}`, color: '#A32D2D', bg: '#FCEBEB' },
-          { label: 'Net profit', value: `₹${netProfit.toLocaleString('en-IN')}`, color: '#185FA5', bg: '#E6F1FB' },
+          { label: 'Total income', value: `\u20B9${totalIncome.toLocaleString('en-IN')}`, icon: TrendingUp, barColor: 'bg-emerald-500' },
+          { label: 'Total expense', value: `\u20B9${totalExpense.toLocaleString('en-IN')}`, icon: TrendingDown, barColor: 'bg-red-500' },
+          { label: 'Net profit', value: `\u20B9${netProfit.toLocaleString('en-IN')}`, icon: DollarSign, barColor: 'bg-brand-500' },
         ].map(c => (
-          <div key={c.label} style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '14px 16px' }}>
-            <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)', marginBottom: 4 }}>{c.label}</div>
-            <div style={{ fontSize: 18, fontWeight: 600, color: c.color }}>{c.value}</div>
+          <div key={c.label} className="stat-card">
+            <div className={`stat-card-bar ${c.barColor}`} />
+            <div className="flex items-center gap-3 mt-1">
+              <c.icon size={18} className="text-slate-400" />
+              <div>
+                <div className="text-xs text-slate-400">{c.label}</div>
+                <div className="text-lg font-semibold text-slate-800">{c.value}</div>
+              </div>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Form */}
       {showForm && (
-        <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '16px 20px', marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 14 }}>{editId ? 'Edit entry' : 'Add entry'}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        <div className="form-section">
+          <div className="form-section-title">{editId ? 'Edit entry' : 'Add entry'}</div>
+          <div className="form-grid">
             <div>
-              <label style={labelStyle}>Type *</label>
-              <select value={form.type} onChange={e => set('type', e.target.value)} style={inputStyle}>
+              <label className="form-label">Type *</label>
+              <select value={form.type} onChange={e => set('type', e.target.value)} className="select">
                 <option value="INCOME">Income</option>
                 <option value="EXPENSE">Expense</option>
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Vehicle</label>
-              <select value={form.vehicleId} onChange={e => set('vehicleId', e.target.value)} style={inputStyle}>
+              <label className="form-label">Vehicle</label>
+              <select value={form.vehicleId} onChange={e => set('vehicleId', e.target.value)} className="select">
                 <option value="">-- Select vehicle --</option>
                 {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.regNumber}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Category</label>
-              <select value={form.category} onChange={e => set('category', e.target.value)} style={inputStyle}>
+              <label className="form-label">Category</label>
+              <select value={form.category} onChange={e => set('category', e.target.value)} className="select">
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Amount (₹) *</label>
-              <input type="number" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="e.g. 5000" min="0" step="0.01" style={inputStyle} />
+              <label className="form-label">Amount ({'\u20B9'}) *</label>
+              <input type="number" value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="e.g. 5000" min="0" step="0.01" className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Date *</label>
-              <input type="date" value={form.date} onChange={e => set('date', e.target.value)} style={inputStyle} />
+              <label className="form-label">Date *</label>
+              <input type="date" value={form.date} onChange={e => set('date', e.target.value)} className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Description</label>
-              <input value={form.description} onChange={e => set('description', e.target.value)} placeholder="Brief note..." style={inputStyle} />
+              <label className="form-label">Description</label>
+              <input value={form.description} onChange={e => set('description', e.target.value)} placeholder="Brief note..." className="input" />
             </div>
 
-            {error && <div style={{ gridColumn: '1/-1', fontSize: 13, color: '#A32D2D', padding: '8px 12px', background: '#FCEBEB', borderRadius: 7 }}>{error}</div>}
+            {error && <div className="col-span-full text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</div>}
 
-            <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, marginTop: 4 }}>
-              <button onClick={handleSubmit} disabled={createMutation.isLoading || updateMutation.isLoading} style={{ padding: '8px 20px', borderRadius: 7, background: '#185FA5', color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', opacity: (createMutation.isLoading || updateMutation.isLoading) ? 0.7 : 1 }}>
+            <div className="col-span-full flex gap-2 mt-1">
+              <button onClick={handleSubmit} disabled={createMutation.isLoading || updateMutation.isLoading} className="btn-primary">
                 {createMutation.isLoading || updateMutation.isLoading ? 'Saving...' : editId ? 'Update' : 'Add entry'}
               </button>
-              <button onClick={resetForm} style={{ padding: '8px 20px', borderRadius: 7, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={resetForm} className="btn-secondary">Cancel</button>
             </div>
           </div>
         </div>
       )}
 
       {/* Table */}
-      <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <div className="table-container">
+        <table>
           <thead>
-            <tr style={{ background: 'var(--bg-secondary)' }}>
-              {['Date', 'Vehicle', 'Type', 'Description', 'Category', 'Amount (₹)', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '8px 12px', fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: '0.5px solid var(--border)' }}>{h}</th>
+            <tr>
+              {['Date', 'Vehicle', 'Type', 'Description', 'Category', 'Amount (\u20B9)', 'Actions'].map(h => (
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>Loading...</td></tr>}
-            {!isLoading && entries.length === 0 && <tr><td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No entries found</td></tr>}
-            {entries.map((e: any) => {
-              const ts = TYPE_STYLE[e.type] || TYPE_STYLE.EXPENSE;
-              return (
-                <tr key={e.id} style={{ borderBottom: '0.5px solid var(--border)' }}>
-                  <td style={{ padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)' }}>{e.date ? new Date(e.date).toLocaleDateString('en-IN') : '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{e.vehicle?.regNumber || '—'}</td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 7px', borderRadius: 4, background: ts.bg, color: ts.color }}>{e.type}</span>
-                  </td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{e.description || '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{e.category || '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 13, fontWeight: 500, color: e.type === 'INCOME' ? '#3B6D11' : '#A32D2D' }}>
-                    {e.type === 'INCOME' ? '+' : '-'}₹{(e.amount || 0).toLocaleString('en-IN')}
-                  </td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      <button onClick={() => openEdit(e)} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}>Edit</button>
-                      <button onClick={() => { if (window.confirm('Delete this entry?')) deleteMutation.mutate(e.id); }} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid #FCEBEB', background: '#FCEBEB', color: '#A32D2D', cursor: 'pointer' }}>Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
+            {isLoading && <tr><td colSpan={7} className="text-center text-slate-400 py-6">Loading...</td></tr>}
+            {!isLoading && entries.length === 0 && <tr><td colSpan={7} className="text-center text-slate-400 py-6">No entries found</td></tr>}
+            {entries.map((e: any) => (
+              <tr key={e.id}>
+                <td className="text-slate-700">{e.date ? new Date(e.date).toLocaleDateString('en-IN') : '\u2014'}</td>
+                <td className="font-medium text-slate-800">{e.vehicle?.regNumber || '\u2014'}</td>
+                <td>
+                  <span className={e.type === 'INCOME' ? 'badge-green' : 'badge-red'}>{e.type}</span>
+                </td>
+                <td className="text-xs text-slate-500">{e.description || '\u2014'}</td>
+                <td className="text-xs text-slate-500">{e.category || '\u2014'}</td>
+                <td className={`font-medium ${e.type === 'INCOME' ? 'text-emerald-600' : 'text-red-600'}`}>
+                  {e.type === 'INCOME' ? '+' : '-'}{'\u20B9'}{(e.amount || 0).toLocaleString('en-IN')}
+                </td>
+                <td>
+                  <div className="flex gap-1">
+                    <button onClick={() => openEdit(e)} className="btn-secondary btn-sm">
+                      <Edit size={13} />
+                    </button>
+                    <button onClick={() => { if (window.confirm('Delete this entry?')) deleteMutation.mutate(e.id); }} className="btn-danger btn-sm">
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { reminderApi, vehicleApi } from '../services/api';
-
-const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  UNREAD: { bg: '#FCEBEB', color: '#A32D2D' },
-  READ:   { bg: '#EAF3DE', color: '#3B6D11' },
-};
+import { Plus, Trash2, Bell, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 
 const CATEGORIES = [
   'INSURANCE', 'RC_RENEWAL', 'LICENCE_RENEWAL', 'SERVICE', 'FITNESS',
@@ -78,117 +74,127 @@ export const RemindersPage: React.FC = () => {
     });
   };
 
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' };
-  const labelStyle: React.CSSProperties = { fontSize: 11.5, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 };
-
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <div className="page">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>Reminders</div>
+      <div className="page-header">
+        <div className="flex items-center gap-3">
+          <h1 className="page-title">Reminders</h1>
           {typeof upcomingCount === 'number' && upcomingCount > 0 && (
-            <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', borderRadius: 10, background: '#FCEBEB', color: '#A32D2D' }}>
-              {upcomingCount} upcoming
+            <span className="badge-red">
+              <Bell size={11} /> {upcomingCount} upcoming
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer' }}>
-            <input type="checkbox" checked={unreadOnly} onChange={e => setUnreadOnly(e.target.checked)} />
+        <div className="flex gap-2 items-center">
+          <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer">
+            <input type="checkbox" checked={unreadOnly} onChange={e => setUnreadOnly(e.target.checked)} className="rounded" />
             Unread only
           </label>
-          <select value={vehicleFilter} onChange={e => setVehicleFilter(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }}>
+          <select value={vehicleFilter} onChange={e => setVehicleFilter(e.target.value)} className="select">
             <option value="">All vehicles</option>
             {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.regNumber}</option>)}
           </select>
-          <button onClick={() => { resetForm(); setShowForm(true); }} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, background: '#185FA5', color: '#fff', border: 'none', cursor: 'pointer' }}>+ Add reminder</button>
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary">
+            <Plus size={15} /> Add reminder
+          </button>
         </div>
       </div>
 
       {/* Form */}
       {showForm && (
-        <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '16px 20px', marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 14 }}>New reminder</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        <div className="form-section">
+          <div className="form-section-title">New reminder</div>
+          <div className="form-grid">
             <div>
-              <label style={labelStyle}>Title *</label>
-              <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Insurance renewal" style={inputStyle} />
+              <label className="form-label">Title *</label>
+              <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Insurance renewal" className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Due date *</label>
-              <input type="date" value={form.dueDate} onChange={e => set('dueDate', e.target.value)} style={inputStyle} />
+              <label className="form-label">Due date *</label>
+              <input type="date" value={form.dueDate} onChange={e => set('dueDate', e.target.value)} className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Category</label>
-              <select value={form.category} onChange={e => set('category', e.target.value)} style={inputStyle}>
+              <label className="form-label">Category</label>
+              <select value={form.category} onChange={e => set('category', e.target.value)} className="select">
                 {CATEGORIES.map(c => <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Vehicle</label>
-              <select value={form.vehicleId} onChange={e => set('vehicleId', e.target.value)} style={inputStyle}>
+              <label className="form-label">Vehicle</label>
+              <select value={form.vehicleId} onChange={e => set('vehicleId', e.target.value)} className="select">
                 <option value="">-- Select vehicle --</option>
                 {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.regNumber}</option>)}
               </select>
             </div>
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={labelStyle}>Description</label>
-              <input value={form.description} onChange={e => set('description', e.target.value)} placeholder="Optional details..." style={inputStyle} />
+            <div className="col-span-2">
+              <label className="form-label">Description</label>
+              <input value={form.description} onChange={e => set('description', e.target.value)} placeholder="Optional details..." className="input" />
             </div>
 
-            {error && <div style={{ gridColumn: '1/-1', fontSize: 13, color: '#A32D2D', padding: '8px 12px', background: '#FCEBEB', borderRadius: 7 }}>{error}</div>}
+            {error && <div className="col-span-full text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</div>}
 
-            <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, marginTop: 4 }}>
-              <button onClick={handleSubmit} disabled={createMutation.isLoading} style={{ padding: '8px 20px', borderRadius: 7, background: '#185FA5', color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', opacity: createMutation.isLoading ? 0.7 : 1 }}>
+            <div className="col-span-full flex gap-2 mt-1">
+              <button onClick={handleSubmit} disabled={createMutation.isLoading} className="btn-primary">
                 {createMutation.isLoading ? 'Saving...' : 'Add reminder'}
               </button>
-              <button onClick={resetForm} style={{ padding: '8px 20px', borderRadius: 7, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={resetForm} className="btn-secondary">Cancel</button>
             </div>
           </div>
         </div>
       )}
 
       {/* Table */}
-      <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <div className="table-container">
+        <table>
           <thead>
-            <tr style={{ background: 'var(--bg-secondary)' }}>
+            <tr>
               {['Vehicle', 'Title', 'Due date', 'Category', 'Status', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '8px 12px', fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: '0.5px solid var(--border)' }}>{h}</th>
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={6} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>Loading...</td></tr>}
-            {!isLoading && reminders.length === 0 && <tr><td colSpan={6} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No reminders found</td></tr>}
+            {isLoading && <tr><td colSpan={6} className="text-center text-slate-400 py-6">Loading...</td></tr>}
+            {!isLoading && reminders.length === 0 && <tr><td colSpan={6} className="text-center text-slate-400 py-6">No reminders found</td></tr>}
             {reminders.map((r: any) => {
               const isRead = r.isRead || r.status === 'READ';
-              const ss = isRead ? STATUS_STYLE.READ : STATUS_STYLE.UNREAD;
               const dueDays = r.dueDate ? Math.ceil((new Date(r.dueDate).getTime() - Date.now()) / 86400000) : null;
               const overdue = dueDays !== null && dueDays < 0;
               return (
-                <tr key={r.id} style={{ borderBottom: '0.5px solid var(--border)', opacity: isRead ? 0.7 : 1 }}>
-                  <td style={{ padding: '10px 12px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{r.vehicle?.regNumber || '—'}</td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{r.title}</div>
-                    {r.description && <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 1 }}>{r.description}</div>}
+                <tr key={r.id} className={isRead ? 'opacity-70' : ''}>
+                  <td className="font-medium text-slate-800">{r.vehicle?.regNumber || '\u2014'}</td>
+                  <td>
+                    <div className="font-medium text-slate-800 text-sm">{r.title}</div>
+                    {r.description && <div className="text-[11px] text-slate-400 mt-0.5">{r.description}</div>}
                   </td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: overdue ? '#A32D2D' : 'var(--text-secondary)' }}>
-                    {r.dueDate ? new Date(r.dueDate).toLocaleDateString('en-IN') : '—'}
-                    {overdue && <span style={{ marginLeft: 4, fontSize: 10, fontWeight: 500, background: '#FCEBEB', color: '#A32D2D', padding: '1px 5px', borderRadius: 3 }}>OVERDUE</span>}
-                    {dueDays !== null && dueDays >= 0 && dueDays <= 7 && <span style={{ marginLeft: 4, fontSize: 10, fontWeight: 500, background: '#FAEEDA', color: '#854F0B', padding: '1px 5px', borderRadius: 3 }}>{dueDays}d</span>}
+                  <td className={overdue ? 'text-red-600' : 'text-slate-500'}>
+                    <span className="text-xs">{r.dueDate ? new Date(r.dueDate).toLocaleDateString('en-IN') : '\u2014'}</span>
+                    {overdue && (
+                      <span className="badge-red ml-1.5 text-[10px]">
+                        <AlertTriangle size={10} /> OVERDUE
+                      </span>
+                    )}
+                    {dueDays !== null && dueDays >= 0 && dueDays <= 7 && (
+                      <span className="badge-orange ml-1.5 text-[10px]">
+                        <Clock size={10} /> {dueDays}d
+                      </span>
+                    )}
                   </td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{r.category ? r.category.replace(/_/g, ' ') : '—'}</td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 7px', borderRadius: 4, background: ss.bg, color: ss.color }}>{isRead ? 'Read' : 'Unread'}</span>
+                  <td className="text-xs text-slate-500">{r.category ? r.category.replace(/_/g, ' ') : '\u2014'}</td>
+                  <td>
+                    <span className={isRead ? 'badge-green' : 'badge-red'}>{isRead ? 'Read' : 'Unread'}</span>
                   </td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <div style={{ display: 'flex', gap: 4 }}>
+                  <td>
+                    <div className="flex gap-1">
                       {!isRead && (
-                        <button onClick={() => markReadMutation.mutate(r.id)} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid #B5D4F4', background: '#E6F1FB', color: '#0C447C', cursor: 'pointer' }}>Mark read</button>
+                        <button onClick={() => markReadMutation.mutate(r.id)} className="btn-secondary btn-sm">
+                          <CheckCircle size={13} /> Mark read
+                        </button>
                       )}
-                      <button onClick={() => { if (window.confirm('Delete this reminder?')) deleteMutation.mutate(r.id); }} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid #FCEBEB', background: '#FCEBEB', color: '#A32D2D', cursor: 'pointer' }}>Delete</button>
+                      <button onClick={() => { if (window.confirm('Delete this reminder?')) deleteMutation.mutate(r.id); }} className="btn-danger btn-sm">
+                        <Trash2 size={13} />
+                      </button>
                     </div>
                   </td>
                 </tr>

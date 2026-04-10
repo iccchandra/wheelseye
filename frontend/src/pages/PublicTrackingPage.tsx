@@ -61,12 +61,17 @@ export const PublicTrackingPage: React.FC = () => {
     }
   }, [shipment, positions]);
 
-  if (loading) return <div style={styles.center}>Loading shipment...</div>;
-  if (error) return <div style={styles.center}>{error}</div>;
+  if (loading) return <div className="flex items-center justify-center h-screen text-sm text-slate-400">Loading shipment...</div>;
+  if (error) return <div className="flex items-center justify-center h-screen text-sm text-slate-400">{error}</div>;
   if (!shipment) return null;
 
-  const statusColor = shipment.status === 'DELIVERED' ? '#185FA5' : shipment.status === 'DELAYED' ? '#A32D2D' : '#3B6D11';
-  const statusLabel = { IN_TRANSIT: 'In transit', DELIVERED: 'Delivered', DELAYED: 'Delayed', DISPATCHED: 'Dispatched' }[shipment.status] || shipment.status;
+  const statusColor = shipment.status === 'DELIVERED' ? 'text-brand-700 bg-brand-50' : shipment.status === 'DELAYED' ? 'text-red-600 bg-red-50' : 'text-emerald-600 bg-emerald-50';
+  const statusDot = shipment.status === 'DELIVERED' ? 'bg-brand-700' : shipment.status === 'DELAYED' ? 'bg-red-600' : 'bg-emerald-600';
+  const statusLabelMap: Record<string, string> = { IN_TRANSIT: 'In transit', DELIVERED: 'Delivered', DELAYED: 'Delayed', DISPATCHED: 'Dispatched' };
+  const statusLabel = statusLabelMap[shipment.status] || shipment.status;
+
+  const progressColor = shipment.status === 'DELIVERED' ? 'bg-brand-700' : shipment.status === 'DELAYED' ? 'bg-red-600' : 'bg-emerald-600';
+  const progressFaded = shipment.status === 'DELIVERED' ? 'bg-brand-200' : shipment.status === 'DELAYED' ? 'bg-red-200' : 'bg-emerald-200';
 
   const milestones = [
     { label: `${shipment.origin} (Origin)`, sub: `Picked up · ${shipment.vehicle?.regNumber}`, time: shipment.actualPickup, done: true },
@@ -75,84 +80,78 @@ export const PublicTrackingPage: React.FC = () => {
   ];
 
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100vh', background: '#f5f5f5' }}>
+    <div className="max-w-[480px] mx-auto min-h-screen bg-slate-100">
       {/* Header */}
-      <div style={{ background: '#185FA5', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 24, height: 24, borderRadius: 4, background: 'rgba(255,255,255,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#fff', fontWeight: 500 }}>FT</div>
-          <span style={{ color: '#fff', fontSize: 13, fontWeight: 500 }}>FreightTrack</span>
+      <div className="bg-brand-700 px-4 py-3 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded bg-white/25 flex items-center justify-center text-[10px] text-white font-medium">FT</div>
+          <span className="text-white text-sm font-medium">FreightTrack</span>
         </div>
-        <span style={{ color: 'rgba(255,255,255,.75)', fontSize: 11 }}>🔒 Secure tracking</span>
+        <span className="text-white/75 text-[11px]">Secure tracking</span>
       </div>
 
       {/* Map */}
-      <div id="pub-map" style={{ height: 200, background: '#DDE3EC' }} />
+      <div id="pub-map" className="h-[200px] bg-slate-200" />
 
       {/* Status */}
-      <div style={{ background: '#fff', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '0.5px solid #eee' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: statusColor + '18', borderRadius: 99, padding: '4px 10px' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, display: 'inline-block', animation: shipment.status !== 'DELIVERED' ? 'blink 1.2s infinite' : 'none' }} />
-          <span style={{ fontSize: 12, fontWeight: 500, color: statusColor }}>{statusLabel}</span>
+      <div className="bg-white px-3.5 py-2.5 flex justify-between items-center border-b border-slate-100">
+        <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 ${statusColor}`}>
+          <span className={`w-1.5 h-1.5 rounded-full inline-block ${statusDot} ${shipment.status !== 'DELIVERED' ? 'animate-pulse-dot' : ''}`} />
+          <span className="text-xs font-medium">{statusLabel}</span>
         </div>
-        <span style={{ fontSize: 11, color: '#888' }}>
-          ETA {shipment.estimatedDelivery ? formatDateTime(shipment.estimatedDelivery) : '—'}
+        <span className="text-[11px] text-slate-400">
+          ETA {shipment.estimatedDelivery ? formatDateTime(shipment.estimatedDelivery) : '\u2014'}
         </span>
       </div>
 
       {/* Timeline */}
-      <div style={{ background: '#fff', padding: '14px', marginTop: 8 }}>
-        <div style={{ fontSize: 10, fontWeight: 500, color: '#888', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>Shipment journey</div>
+      <div className="bg-white p-3.5 mt-2">
+        <div className="section-label mb-2.5">Shipment journey</div>
         {milestones.map((m, i) => (
-          <div key={i} style={{ display: 'flex', gap: 12, paddingBottom: i < milestones.length - 1 ? 16 : 0 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 14 }}>
-              <div style={{ width: 12, height: 12, borderRadius: '50%', background: m.done ? statusColor : '#D3D1C7', border: '2px solid #fff', flexShrink: 0 }} />
-              {i < milestones.length - 1 && <div style={{ width: 1.5, flex: 1, background: m.done ? statusColor + '44' : '#D3D1C7', marginTop: 2 }} />}
+          <div key={i} className={`flex gap-3 ${i < milestones.length - 1 ? 'pb-4' : ''}`}>
+            <div className="flex flex-col items-center w-3.5">
+              <div className={`w-3 h-3 rounded-full border-2 border-white shrink-0 ${m.done ? progressColor : 'bg-slate-300'}`} />
+              {i < milestones.length - 1 && <div className={`w-[1.5px] flex-1 mt-0.5 ${m.done ? progressFaded : 'bg-slate-300'}`} />}
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: m.done ? '#2C2C2A' : '#B4B2A9' }}>{m.label}</div>
-              <div style={{ fontSize: 11, color: '#888', marginTop: 1 }}>{m.sub}</div>
-              {m.time && <div style={{ fontSize: 10, color: '#aaa', marginTop: 2 }}>{formatDateTime(m.time)}</div>}
+            <div className="flex-1">
+              <div className={`text-sm font-medium ${m.done ? 'text-slate-800' : 'text-slate-400'}`}>{m.label}</div>
+              <div className="text-[11px] text-slate-400 mt-px">{m.sub}</div>
+              {m.time && <div className="text-[10px] text-slate-300 mt-0.5">{formatDateTime(m.time)}</div>}
             </div>
           </div>
         ))}
       </div>
 
       {/* Cargo info */}
-      <div style={{ background: '#fff', padding: 14, marginTop: 8, borderRadius: 0 }}>
-        <div style={{ fontSize: 10, fontWeight: 500, color: '#888', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>Cargo details</div>
+      <div className="bg-white p-3.5 mt-2">
+        <div className="section-label mb-2">Cargo details</div>
         {[
           ['Consignment', shipment.trackingNumber],
           ['Cargo', `${shipment.cargoDescription} · ${shipment.weightMT} MT`],
-          ['Vehicle', shipment.vehicle?.regNumber || '—'],
-          ['Driver contact', shipment.driver?.phone || '—'],
+          ['Vehicle', shipment.vehicle?.regNumber || '\u2014'],
+          ['Driver contact', shipment.driver?.phone || '\u2014'],
         ].map(([l, v]) => (
-          <div key={l} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, marginBottom: 6 }}>
-            <span style={{ color: '#888' }}>{l}</span>
-            <span style={{ fontWeight: 500, color: '#2C2C2A' }}>{v}</span>
+          <div key={l} className="flex justify-between text-[12.5px] mb-1.5">
+            <span className="text-slate-400">{l}</span>
+            <span className="font-medium text-slate-800">{v}</span>
           </div>
         ))}
       </div>
 
       {/* Actions */}
       {shipment.podImageUrl && (
-        <div style={{ padding: 14, background: '#fff', marginTop: 8 }}>
+        <div className="p-3.5 bg-white mt-2">
           <a href={shipment.podImageUrl} target="_blank" rel="noreferrer"
-            style={{ display: 'block', textAlign: 'center', padding: 9, background: '#185FA5', color: '#fff', borderRadius: 7, fontSize: 13, fontWeight: 500, textDecoration: 'none' }}>
+            className="btn-primary w-full text-center block">
             View Proof of Delivery
           </a>
         </div>
       )}
-
-      <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}`}</style>
     </div>
   );
 };
 
-const styles = {
-  center: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontSize: 14, color: '#888' } as React.CSSProperties,
-};
-
 function formatDateTime(d: string) {
-  if (!d) return '—';
+  if (!d) return '\u2014';
   return new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { fuelApi, vehicleApi, driverApi } from '../services/api';
+import { Plus, Edit, Trash2, Fuel, DollarSign, TrendingUp } from 'lucide-react';
 
 const FUEL_TYPES = ['DIESEL', 'PETROL', 'CNG', 'ELECTRIC'];
 
@@ -119,132 +120,141 @@ export const FuelPage: React.FC = () => {
     }
   };
 
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '8px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' };
-  const labelStyle: React.CSSProperties = { fontSize: 11.5, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 };
-
   return (
-    <div style={{ padding: '20px 24px' }}>
+    <div className="page">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>Fuel management</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <select value={vehicleFilter} onChange={e => setVehicleFilter(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }}>
+      <div className="page-header">
+        <h1 className="page-title">Fuel management</h1>
+        <div className="flex gap-2">
+          <select value={vehicleFilter} onChange={e => setVehicleFilter(e.target.value)} className="select">
             <option value="">All vehicles</option>
             {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.regNumber}</option>)}
           </select>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }} />
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }} />
-          <button onClick={() => { resetForm(); setShowForm(true); }} style={{ padding: '6px 14px', borderRadius: 7, fontSize: 13, fontWeight: 500, background: '#185FA5', color: '#fff', border: 'none', cursor: 'pointer' }}>+ Add fuel</button>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="input w-auto" />
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="input w-auto" />
+          <button onClick={() => { resetForm(); setShowForm(true); }} className="btn-primary">
+            <Plus size={15} /> Add fuel
+          </button>
         </div>
       </div>
 
       {/* Report cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 16 }}>
+      <div className="grid grid-cols-3 gap-3 mb-4">
         {[
-          { label: 'Total quantity', value: `${(report.totalQuantity || 0).toLocaleString('en-IN')} L`, color: '#185FA5', bg: '#E6F1FB' },
-          { label: 'Total cost', value: `₹${(report.totalCost || 0).toLocaleString('en-IN')}`, color: '#A32D2D', bg: '#FCEBEB' },
-          { label: 'Avg price / L', value: `₹${(report.avgPricePerUnit || 0).toFixed(2)}`, color: '#3B6D11', bg: '#EAF3DE' },
+          { label: 'Total quantity', value: `${(report.totalQuantity || 0).toLocaleString('en-IN')} L`, icon: Fuel, barColor: 'bg-brand-500' },
+          { label: 'Total cost', value: `\u20B9${(report.totalCost || 0).toLocaleString('en-IN')}`, icon: DollarSign, barColor: 'bg-red-500' },
+          { label: 'Avg price / L', value: `\u20B9${(report.avgPricePerUnit || 0).toFixed(2)}`, icon: TrendingUp, barColor: 'bg-emerald-500' },
         ].map(c => (
-          <div key={c.label} style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '14px 16px' }}>
-            <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)', marginBottom: 4 }}>{c.label}</div>
-            <div style={{ fontSize: 18, fontWeight: 600, color: c.color }}>{c.value}</div>
+          <div key={c.label} className="stat-card">
+            <div className={`stat-card-bar ${c.barColor}`} />
+            <div className="flex items-center gap-3 mt-1">
+              <c.icon size={18} className="text-slate-400" />
+              <div>
+                <div className="text-xs text-slate-400">{c.label}</div>
+                <div className="text-lg font-semibold text-slate-800">{c.value}</div>
+              </div>
+            </div>
           </div>
         ))}
       </div>
 
       {/* Form modal */}
       {showForm && (
-        <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, padding: '16px 20px', marginBottom: 16 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 14 }}>{editId ? 'Edit fuel entry' : 'Add fuel entry'}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+        <div className="form-section">
+          <div className="form-section-title">{editId ? 'Edit fuel entry' : 'Add fuel entry'}</div>
+          <div className="form-grid">
             <div>
-              <label style={labelStyle}>Vehicle *</label>
-              <select value={form.vehicleId} onChange={e => set('vehicleId', e.target.value)} style={inputStyle}>
+              <label className="form-label">Vehicle *</label>
+              <select value={form.vehicleId} onChange={e => set('vehicleId', e.target.value)} className="select">
                 <option value="">-- Select vehicle --</option>
                 {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.regNumber}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Driver</label>
-              <select value={form.driverId} onChange={e => set('driverId', e.target.value)} style={inputStyle}>
+              <label className="form-label">Driver</label>
+              <select value={form.driverId} onChange={e => set('driverId', e.target.value)} className="select">
                 <option value="">-- Select driver --</option>
                 {drivers.map((d: any) => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Fill date *</label>
-              <input type="date" value={form.fillDate} onChange={e => set('fillDate', e.target.value)} style={inputStyle} />
+              <label className="form-label">Fill date *</label>
+              <input type="date" value={form.fillDate} onChange={e => set('fillDate', e.target.value)} className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Quantity (L) *</label>
-              <input type="number" value={form.quantity} onChange={e => set('quantity', e.target.value)} placeholder="e.g. 120" min="0" step="0.01" style={inputStyle} />
+              <label className="form-label">Quantity (L) *</label>
+              <input type="number" value={form.quantity} onChange={e => set('quantity', e.target.value)} placeholder="e.g. 120" min="0" step="0.01" className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Price / L *</label>
-              <input type="number" value={form.pricePerUnit} onChange={e => set('pricePerUnit', e.target.value)} placeholder="e.g. 89.50" min="0" step="0.01" style={inputStyle} />
+              <label className="form-label">Price / L *</label>
+              <input type="number" value={form.pricePerUnit} onChange={e => set('pricePerUnit', e.target.value)} placeholder="e.g. 89.50" min="0" step="0.01" className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Total amount</label>
-              <input type="number" value={form.totalAmount} readOnly style={{ ...inputStyle, background: 'var(--bg-secondary)', color: 'var(--text-tertiary)' }} />
+              <label className="form-label">Total amount</label>
+              <input type="number" value={form.totalAmount} readOnly className="input bg-slate-50 text-slate-400" />
             </div>
             <div>
-              <label style={labelStyle}>Odometer</label>
-              <input type="number" value={form.odometerReading} onChange={e => set('odometerReading', e.target.value)} placeholder="e.g. 45230" min="0" style={inputStyle} />
+              <label className="form-label">Odometer</label>
+              <input type="number" value={form.odometerReading} onChange={e => set('odometerReading', e.target.value)} placeholder="e.g. 45230" min="0" className="input" />
             </div>
             <div>
-              <label style={labelStyle}>Fuel type</label>
-              <select value={form.fuelType} onChange={e => set('fuelType', e.target.value)} style={inputStyle}>
+              <label className="form-label">Fuel type</label>
+              <select value={form.fuelType} onChange={e => set('fuelType', e.target.value)} className="select">
                 {FUEL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div>
-              <label style={labelStyle}>Station</label>
-              <input value={form.station} onChange={e => set('station', e.target.value)} placeholder="e.g. HP Pump, NH44" style={inputStyle} />
+              <label className="form-label">Station</label>
+              <input value={form.station} onChange={e => set('station', e.target.value)} placeholder="e.g. HP Pump, NH44" className="input" />
             </div>
-            <div style={{ gridColumn: '1/-1' }}>
-              <label style={labelStyle}>Comments</label>
-              <input value={form.comments} onChange={e => set('comments', e.target.value)} placeholder="Optional notes..." style={inputStyle} />
+            <div className="col-span-full">
+              <label className="form-label">Comments</label>
+              <input value={form.comments} onChange={e => set('comments', e.target.value)} placeholder="Optional notes..." className="input" />
             </div>
 
-            {error && <div style={{ gridColumn: '1/-1', fontSize: 13, color: '#A32D2D', padding: '8px 12px', background: '#FCEBEB', borderRadius: 7 }}>{error}</div>}
+            {error && <div className="col-span-full text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</div>}
 
-            <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, marginTop: 4 }}>
-              <button onClick={handleSubmit} disabled={createMutation.isLoading || updateMutation.isLoading} style={{ padding: '8px 20px', borderRadius: 7, background: '#185FA5', color: '#fff', border: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', opacity: (createMutation.isLoading || updateMutation.isLoading) ? 0.7 : 1 }}>
+            <div className="col-span-full flex gap-2 mt-1">
+              <button onClick={handleSubmit} disabled={createMutation.isLoading || updateMutation.isLoading} className="btn-primary">
                 {createMutation.isLoading || updateMutation.isLoading ? 'Saving...' : editId ? 'Update' : 'Add entry'}
               </button>
-              <button onClick={resetForm} style={{ padding: '8px 20px', borderRadius: 7, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={resetForm} className="btn-secondary">Cancel</button>
             </div>
           </div>
         </div>
       )}
 
       {/* Table */}
-      <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <div className="table-container">
+        <table>
           <thead>
-            <tr style={{ background: 'var(--bg-secondary)' }}>
-              {['Fill date', 'Vehicle', 'Driver', 'Quantity (L)', 'Price/L', 'Total (₹)', 'Odometer', 'Station', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '8px 12px', fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: '0.5px solid var(--border)' }}>{h}</th>
+            <tr>
+              {['Fill date', 'Vehicle', 'Driver', 'Quantity (L)', 'Price/L', 'Total (\u20B9)', 'Odometer', 'Station', 'Actions'].map(h => (
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>Loading...</td></tr>}
-            {!isLoading && entries.length === 0 && <tr><td colSpan={9} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No fuel entries found</td></tr>}
+            {isLoading && <tr><td colSpan={9} className="text-center text-slate-400 py-6">Loading...</td></tr>}
+            {!isLoading && entries.length === 0 && <tr><td colSpan={9} className="text-center text-slate-400 py-6">No fuel entries found</td></tr>}
             {entries.map((f: any) => (
-              <tr key={f.id} style={{ borderBottom: '0.5px solid var(--border)' }}>
-                <td style={{ padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)' }}>{f.fillDate ? new Date(f.fillDate).toLocaleDateString('en-IN') : '—'}</td>
-                <td style={{ padding: '10px 12px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{f.vehicle?.regNumber || '—'}</td>
-                <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{f.driver?.name || '—'}</td>
-                <td style={{ padding: '10px 12px', fontSize: 13, color: 'var(--text-primary)' }}>{f.quantity?.toLocaleString('en-IN')}</td>
-                <td style={{ padding: '10px 12px', fontSize: 13, color: 'var(--text-secondary)' }}>₹{(f.pricePerUnit || 0).toFixed(2)}</td>
-                <td style={{ padding: '10px 12px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>₹{(f.totalAmount || 0).toLocaleString('en-IN')}</td>
-                <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{f.odometerReading ? f.odometerReading.toLocaleString('en-IN') : '—'}</td>
-                <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{f.station || '—'}</td>
-                <td style={{ padding: '10px 12px' }}>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    <button onClick={() => openEdit(f)} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}>Edit</button>
-                    <button onClick={() => { if (window.confirm('Delete this fuel entry?')) deleteMutation.mutate(f.id); }} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid #FCEBEB', background: '#FCEBEB', color: '#A32D2D', cursor: 'pointer' }}>Delete</button>
+              <tr key={f.id}>
+                <td className="text-slate-700">{f.fillDate ? new Date(f.fillDate).toLocaleDateString('en-IN') : '\u2014'}</td>
+                <td className="font-medium text-slate-800">{f.vehicle?.regNumber || '\u2014'}</td>
+                <td className="text-xs text-slate-500">{f.driver?.name || '\u2014'}</td>
+                <td className="text-slate-700">{f.quantity?.toLocaleString('en-IN')}</td>
+                <td className="text-slate-500">{'\u20B9'}{(f.pricePerUnit || 0).toFixed(2)}</td>
+                <td className="font-medium text-slate-800">{'\u20B9'}{(f.totalAmount || 0).toLocaleString('en-IN')}</td>
+                <td className="text-xs text-slate-500">{f.odometerReading ? f.odometerReading.toLocaleString('en-IN') : '\u2014'}</td>
+                <td className="text-xs text-slate-500">{f.station || '\u2014'}</td>
+                <td>
+                  <div className="flex gap-1">
+                    <button onClick={() => openEdit(f)} className="btn-secondary btn-sm">
+                      <Edit size={13} />
+                    </button>
+                    <button onClick={() => { if (window.confirm('Delete this fuel entry?')) deleteMutation.mutate(f.id); }} className="btn-danger btn-sm">
+                      <Trash2 size={13} />
+                    </button>
                   </div>
                 </td>
               </tr>

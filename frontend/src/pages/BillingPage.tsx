@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { billingApi, documentApi } from '../services/api';
+import { Download, CreditCard } from 'lucide-react';
 
-const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
-  DRAFT:     { bg: '#F1EFE8', color: '#5F5E5A' },
-  SENT:      { bg: '#E6F1FB', color: '#185FA5' },
-  PAID:      { bg: '#EAF3DE', color: '#3B6D11' },
-  OVERDUE:   { bg: '#FCEBEB', color: '#A32D2D' },
-  CANCELLED: { bg: '#F1EFE8', color: '#888780' },
+const STATUS_BADGE: Record<string, string> = {
+  DRAFT:     'badge-gray',
+  SENT:      'badge-blue',
+  PAID:      'badge-green',
+  OVERDUE:   'badge-red',
+  CANCELLED: 'badge-gray',
 };
 
 declare global { interface Window { Razorpay: any; } }
@@ -60,10 +61,10 @@ export const BillingPage: React.FC = () => {
   const invoices = Array.isArray(responseData) ? responseData : responseData?.data || [];
 
   return (
-    <div style={{ padding: '20px 24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>Billing &amp; invoices</div>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: '6px 10px', border: '0.5px solid var(--border)', borderRadius: 7, fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-secondary)', outline: 'none' }}>
+    <div className="page">
+      <div className="page-header">
+        <h1 className="page-title">Billing & invoices</h1>
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="select w-40">
           <option value="">All statuses</option>
           <option value="DRAFT">Draft</option>
           <option value="SENT">Sent</option>
@@ -72,39 +73,43 @@ export const BillingPage: React.FC = () => {
         </select>
       </div>
 
-      <div style={{ background: 'var(--bg-primary)', border: '0.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <div className="table-container">
+        <table>
           <thead>
-            <tr style={{ background: 'var(--bg-secondary)' }}>
-              {['Invoice #', 'Shipment', 'Consignee', 'Amount (₹)', 'Due date', 'Status', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '8px 12px', fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '.05em', borderBottom: '0.5px solid var(--border)' }}>{h}</th>
+            <tr>
+              {['Invoice #', 'Shipment', 'Consignee', 'Amount', 'Due date', 'Status', 'Actions'].map(h => (
+                <th key={h}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>Loading...</td></tr>}
-            {!isLoading && invoices.length === 0 && <tr><td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13 }}>No invoices found</td></tr>}
+            {isLoading && <tr><td colSpan={7} className="text-center text-slate-400 py-6">Loading...</td></tr>}
+            {!isLoading && invoices.length === 0 && <tr><td colSpan={7} className="text-center text-slate-400 py-6">No invoices found</td></tr>}
             {invoices.map((inv: any) => {
-              const ss = STATUS_STYLE[inv.status] || STATUS_STYLE.DRAFT;
+              const badgeCls = STATUS_BADGE[inv.status] || STATUS_BADGE.DRAFT;
               const overdue = inv.status !== 'PAID' && inv.dueDate && new Date(inv.dueDate) < new Date();
               return (
-                <tr key={inv.id} style={{ borderBottom: '0.5px solid var(--border)' }}>
-                  <td style={{ padding: '10px 12px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{inv.invoiceNumber}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{inv.shipment?.trackingNumber || '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)' }}>{inv.consigneeName || '—'}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>₹{(inv.totalAmount || 0).toLocaleString('en-IN')}</td>
-                  <td style={{ padding: '10px 12px', fontSize: 12, color: overdue ? '#A32D2D' : 'var(--text-secondary)' }}>
+                <tr key={inv.id}>
+                  <td className="font-medium text-slate-800">{inv.invoiceNumber}</td>
+                  <td className="text-slate-500">{inv.shipment?.trackingNumber || '—'}</td>
+                  <td className="text-slate-500">{inv.consigneeName || '—'}</td>
+                  <td className="font-medium text-slate-800">{'\u20B9'}{(inv.totalAmount || 0).toLocaleString('en-IN')}</td>
+                  <td className={overdue ? 'text-red-600' : 'text-slate-500'}>
                     {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-IN') : '—'}
-                    {overdue && <span style={{ marginLeft: 4, fontSize: 10, fontWeight: 500, background: '#FCEBEB', color: '#A32D2D', padding: '1px 5px', borderRadius: 3 }}>OVERDUE</span>}
+                    {overdue && <span className="badge-red ml-1 text-[10px]">OVERDUE</span>}
                   </td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 7px', borderRadius: 4, background: ss.bg, color: ss.color }}>{inv.status}</span>
+                  <td>
+                    <span className={badgeCls}>{inv.status}</span>
                   </td>
-                  <td style={{ padding: '10px 12px' }}>
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      <button onClick={() => downloadPDF(inv.id, inv.invoiceNumber)} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer' }}>PDF</button>
+                  <td>
+                    <div className="flex gap-1">
+                      <button onClick={() => downloadPDF(inv.id, inv.invoiceNumber)} className="btn-secondary btn-sm">
+                        <Download className="w-3 h-3" /> PDF
+                      </button>
                       {inv.status !== 'PAID' && inv.status !== 'CANCELLED' && (
-                        <button onClick={() => payMutation.mutate(inv.id)} style={{ padding: '3px 8px', borderRadius: 5, fontSize: 11, border: '0.5px solid #B5D4F4', background: '#E6F1FB', color: '#0C447C', cursor: 'pointer' }}>Pay</button>
+                        <button onClick={() => payMutation.mutate(inv.id)} className="btn-primary btn-sm">
+                          <CreditCard className="w-3 h-3" /> Pay
+                        </button>
                       )}
                     </div>
                   </td>

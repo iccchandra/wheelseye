@@ -1,18 +1,41 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { alertApi } from '../services/api';
+import { Bell, Check } from 'lucide-react';
 
-const TYPE_COLOR: Record<string, string> = {
-  ROUTE_DEVIATION: '#A32D2D', OVERSPEED: '#A32D2D', DELIVERY_DELAY: '#A32D2D',
-  IDLE: '#BA7517', NIGHT_DRIVING: '#BA7517', DOCUMENT_EXPIRY: '#BA7517',
-  GEOFENCE_ENTRY: '#185FA5', GEOFENCE_EXIT: '#185FA5',
-  TRIP_STARTED: '#3B6D11', TRIP_COMPLETED: '#3B6D11', POD_UPLOADED: '#3B6D11',
+const TYPE_BADGE: Record<string, string> = {
+  ROUTE_DEVIATION: 'badge-red',
+  OVERSPEED: 'badge-red',
+  DELIVERY_DELAY: 'badge-red',
+  IDLE: 'badge-orange',
+  NIGHT_DRIVING: 'badge-orange',
+  DOCUMENT_EXPIRY: 'badge-orange',
+  GEOFENCE_ENTRY: 'badge-blue',
+  GEOFENCE_EXIT: 'badge-blue',
+  TRIP_STARTED: 'badge-green',
+  TRIP_COMPLETED: 'badge-green',
+  POD_UPLOADED: 'badge-green',
 };
+
 const TYPE_LABEL: Record<string, string> = {
   ROUTE_DEVIATION: 'Route deviation', OVERSPEED: 'Over-speed', DELIVERY_DELAY: 'Delay',
   IDLE: 'Idle / halt', NIGHT_DRIVING: 'Night driving', DOCUMENT_EXPIRY: 'Doc expiry',
   GEOFENCE_ENTRY: 'Geofence entry', GEOFENCE_EXIT: 'Geofence exit',
   TRIP_STARTED: 'Trip started', TRIP_COMPLETED: 'Delivered', POD_UPLOADED: 'POD uploaded',
+};
+
+const TYPE_BORDER: Record<string, string> = {
+  ROUTE_DEVIATION: 'border-l-red-500',
+  OVERSPEED: 'border-l-red-500',
+  DELIVERY_DELAY: 'border-l-red-500',
+  IDLE: 'border-l-amber-500',
+  NIGHT_DRIVING: 'border-l-amber-500',
+  DOCUMENT_EXPIRY: 'border-l-amber-500',
+  GEOFENCE_ENTRY: 'border-l-blue-500',
+  GEOFENCE_EXIT: 'border-l-blue-500',
+  TRIP_STARTED: 'border-l-emerald-500',
+  TRIP_COMPLETED: 'border-l-emerald-500',
+  POD_UPLOADED: 'border-l-emerald-500',
 };
 
 export const AlertsPage: React.FC = () => {
@@ -33,52 +56,47 @@ export const AlertsPage: React.FC = () => {
   const alerts = data?.data || [];
 
   return (
-    <div style={{ padding: '20px 24px', maxWidth: 800 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--text-primary)' }}>Alert inbox</div>
-        <div style={{ display: 'flex', gap: 6 }}>
+    <div className="page max-w-3xl">
+      <div className="page-header">
+        <h1 className="page-title flex items-center gap-2">
+          <Bell className="w-5 h-5 text-slate-400" />
+          Alert inbox
+        </h1>
+        <div className="flex gap-1.5">
           {(['unread', 'all'] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{
-              padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
-              background: filter === f ? '#185FA5' : 'var(--bg-secondary)',
-              color: filter === f ? '#fff' : 'var(--text-secondary)',
-              border: `0.5px solid ${filter === f ? '#185FA5' : 'var(--border)'}`,
-            }}>
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={f === filter ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}
+            >
               {f === 'unread' ? 'Unread' : 'All'}
             </button>
           ))}
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="flex flex-col gap-2">
         {alerts.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-tertiary)', fontSize: 13 }}>
-            No alerts {filter === 'unread' ? '— all caught up' : 'found'}
+          <div className="text-center py-10 text-slate-400 text-sm">
+            No alerts {filter === 'unread' ? '-- all caught up' : 'found'}
           </div>
         )}
         {alerts.map((a: any) => (
-          <div key={a.id} style={{
-            background: 'var(--bg-primary)', border: `0.5px solid var(--border)`,
-            borderRadius: 10, padding: '10px 14px',
-            borderLeft: `3px solid ${TYPE_COLOR[a.type] || '#888'}`,
-            display: 'flex', gap: 12, alignItems: 'flex-start',
-            opacity: a.acknowledged ? 0.6 : 1,
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3 }}>
-                <span style={{
-                  fontSize: 10, fontWeight: 500, padding: '2px 6px', borderRadius: 3,
-                  background: (TYPE_COLOR[a.type] || '#888') + '18',
-                  color: TYPE_COLOR[a.type] || '#888',
-                }}>
+          <div
+            key={a.id}
+            className={`card border-l-[3px] ${TYPE_BORDER[a.type] || 'border-l-slate-400'} px-4 py-3 flex gap-3 items-start ${a.acknowledged ? 'opacity-60' : ''}`}
+          >
+            <div className="flex-1 min-w-0">
+              <div className="flex gap-2 items-center mb-1">
+                <span className={TYPE_BADGE[a.type] || 'badge-gray'}>
                   {TYPE_LABEL[a.type] || a.type}
                 </span>
                 {!a.acknowledged && (
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#A32D2D', display: 'inline-block' }} />
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
                 )}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-primary)', marginBottom: 2 }}>{a.message}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+              <div className="text-sm text-slate-800 mb-0.5">{a.message}</div>
+              <div className="text-xs text-slate-400">
                 {new Date(a.createdAt).toLocaleString('en-IN')}
                 {a.lat && ` · ${a.lat.toFixed(4)}, ${a.lng.toFixed(4)}`}
               </div>
@@ -86,9 +104,9 @@ export const AlertsPage: React.FC = () => {
             {!a.acknowledged && (
               <button
                 onClick={() => ackMutation.mutate(a.id)}
-                style={{ padding: '4px 10px', borderRadius: 6, fontSize: 11.5, cursor: 'pointer', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '0.5px solid var(--border)', flexShrink: 0 }}
+                className="btn-secondary btn-sm shrink-0"
               >
-                Acknowledge
+                <Check className="w-3 h-3" /> Acknowledge
               </button>
             )}
           </div>
