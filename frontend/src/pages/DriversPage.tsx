@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { driverApi } from '../services/api';
 import { FileUpload } from '../components/common/FileUpload';
-import { Plus, Search, Edit, X } from 'lucide-react';
+import { Plus, Search, Edit, X, Eye, Phone, MapPin, Award, Calendar, Shield, User, FileText, Heart, AlertTriangle } from 'lucide-react';
 
 const STATUS_BADGE: Record<string, string> = {
   ACTIVE:      'badge-green',
@@ -49,6 +49,7 @@ export const DriversPage: React.FC = () => {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
+  const [viewDriver, setViewDriver] = useState<any>(null);
 
   const { data, isLoading } = useQuery(
     ['drivers', search, status],
@@ -92,6 +93,123 @@ export const DriversPage: React.FC = () => {
     if (editId) updateMut.mutate({ id: editId, d: payload });
     else createMut.mutate(payload);
   };
+
+  // --- View detail ---
+  if (viewDriver) {
+    const d = viewDriver;
+    const sc = STATUS_BADGE[d.status] || 'badge-gray';
+    const dlDays = daysUntil(d.licenceExpiry);
+
+    const InfoRow = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
+      <div className="flex items-center gap-3 py-2.5 border-b border-slate-100 last:border-0">
+        <Icon size={15} className="text-slate-400 shrink-0" />
+        <span className="text-xs text-slate-400 w-32 shrink-0">{label}</span>
+        <span className="text-sm font-medium text-slate-800">{value || '—'}</span>
+      </div>
+    );
+
+    return (
+      <div className="page">
+        <div className="page-header">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setViewDriver(null)} className="btn-secondary btn-sm"><X className="w-3.5 h-3.5" /> Back</button>
+            <h1 className="page-title">Driver Details</h1>
+          </div>
+          <button onClick={() => { openEdit(d); setViewDriver(null); }} className="btn-primary btn-sm"><Edit className="w-3.5 h-3.5" /> Edit</button>
+        </div>
+
+        {/* Header card */}
+        <div className="card p-5 mb-4">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl font-bold shadow-md">
+              {d.name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '??'}
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-slate-800">{d.name}</h2>
+              <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
+                <span className="flex items-center gap-1"><Phone size={13} /> {d.phone}</span>
+                {d.email && <span>· {d.email}</span>}
+              </div>
+            </div>
+            <div className="text-right">
+              <span className={`${sc} !text-xs`}>{d.status}</span>
+              <div className="mt-2 flex items-center gap-1">
+                <Award size={16} className={scoreColor(d.safetyScore || 5)} />
+                <span className={`text-lg font-bold ${scoreColor(d.safetyScore || 5)}`}>{(d.safetyScore || 5).toFixed(1)}</span>
+                <span className="text-xs text-slate-400">/ 5.0</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-4 gap-3 mt-5">
+            {[
+              { label: 'Total Trips', value: d.totalTrips || 0, color: 'text-blue-600' },
+              { label: 'Total KM', value: (d.totalKm || 0).toLocaleString('en-IN'), color: 'text-emerald-600' },
+              { label: 'Experience', value: d.totalExperience ? `${d.totalExperience} yrs` : '—', color: 'text-violet-600' },
+              { label: 'DL Expiry', value: dlDays !== null ? (dlDays >= 0 ? `${dlDays} days` : 'EXPIRED') : '—', color: dlDays !== null && dlDays < 30 ? 'text-red-600' : 'text-slate-700' },
+            ].map(s => (
+              <div key={s.label} className="bg-slate-50 rounded-xl p-3 text-center">
+                <div className={`text-lg font-extrabold ${s.color}`}>{s.value}</div>
+                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {/* Personal Info */}
+          <div className="card p-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2"><User size={15} /> Personal Information</h3>
+            <InfoRow icon={User} label="Date of Birth" value={d.dateOfBirth ? new Date(d.dateOfBirth).toLocaleDateString('en-IN') : ''} />
+            <InfoRow icon={User} label="Gender" value={d.gender} />
+            <InfoRow icon={Heart} label="Blood Group" value={d.bloodGroup} />
+            <InfoRow icon={MapPin} label="Nationality" value={d.nationality} />
+            <InfoRow icon={FileText} label="Education" value={d.education} />
+            <InfoRow icon={User} label="Driver Type" value={d.driverType} />
+            <InfoRow icon={Calendar} label="Date of Joining" value={d.dateOfJoining ? new Date(d.dateOfJoining).toLocaleDateString('en-IN') : ''} />
+            <InfoRow icon={Shield} label="Badge Number" value={d.badgeNumber} />
+          </div>
+
+          {/* Licence Info */}
+          <div className="card p-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2"><FileText size={15} /> Licence Information</h3>
+            <InfoRow icon={FileText} label="Licence Number" value={d.licenceNumber} />
+            <InfoRow icon={FileText} label="Ref Number" value={d.licenceRefNumber} />
+            <InfoRow icon={Calendar} label="First Issue Date" value={d.licenceFirstIssueDate ? new Date(d.licenceFirstIssueDate).toLocaleDateString('en-IN') : ''} />
+            <InfoRow icon={MapPin} label="Licensing Authority" value={d.licencingAuthority} />
+            <InfoRow icon={FileText} label="Transport Type" value={d.transportLicenceType} />
+            <InfoRow icon={Calendar} label="Transport Expiry" value={d.transportLicenceExpiry ? new Date(d.transportLicenceExpiry).toLocaleDateString('en-IN') : ''} />
+            <InfoRow icon={FileText} label="Non-Transport Type" value={d.nonTransportLicenceType} />
+            <InfoRow icon={Calendar} label="Non-Transport Expiry" value={d.nonTransportLicenceExpiry ? new Date(d.nonTransportLicenceExpiry).toLocaleDateString('en-IN') : ''} />
+          </div>
+
+          {/* ID & Documents */}
+          <div className="card p-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2"><Shield size={15} /> ID & Documents</h3>
+            <InfoRow icon={Shield} label="Aadhaar Number" value={d.aadhaarNumber} />
+            {d.photoUrl && <div className="flex items-center gap-3 py-2 border-b border-slate-100"><span className="text-xs text-slate-400 w-32">Photo</span><a href={d.photoUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline">View Photo</a>{/\.(jpg|jpeg|png|gif|webp)$/i.test(d.photoUrl) && <img src={d.photoUrl} alt="" className="w-10 h-10 rounded-lg object-cover border" />}</div>}
+            {d.licenceImageUrl && <div className="flex items-center gap-3 py-2 border-b border-slate-100"><span className="text-xs text-slate-400 w-32">Licence Image</span><a href={d.licenceImageUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline">View Document</a></div>}
+            {d.aadhaarImageUrl && <div className="flex items-center gap-3 py-2"><span className="text-xs text-slate-400 w-32">Aadhaar Image</span><a href={d.aadhaarImageUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline">View Document</a></div>}
+          </div>
+
+          {/* Address & Emergency */}
+          <div className="card p-4">
+            <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2"><MapPin size={15} /> Address & Emergency</h3>
+            <InfoRow icon={MapPin} label="Current Address" value={d.address} />
+            <InfoRow icon={MapPin} label="As per Licence" value={d.addressAsPerLicence} />
+            <InfoRow icon={MapPin} label="As per Aadhaar" value={d.addressAsPerAadhaar} />
+            <div className="border-t border-slate-200 mt-2 pt-2">
+              <h4 className="text-xs font-semibold text-red-500 mb-2 flex items-center gap-1"><AlertTriangle size={12} /> Emergency Contact</h4>
+              <InfoRow icon={User} label="Name" value={d.emergencyContactName} />
+              <InfoRow icon={Phone} label="Number" value={d.emergencyContact} />
+              <InfoRow icon={User} label="Relation" value={d.emergencyContactRelation} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // --- Form view ---
   if (showForm) {
@@ -250,9 +368,14 @@ export const DriversPage: React.FC = () => {
                     <span className={badgeCls}>{d.status}</span>
                   </td>
                   <td>
-                    <button onClick={() => openEdit(d)} className="btn-secondary btn-sm">
-                      <Edit className="w-3 h-3" /> Edit
-                    </button>
+                    <div className="flex gap-1">
+                      <button onClick={() => setViewDriver(d)} className="btn-primary btn-sm">
+                        <Eye className="w-3 h-3" /> View
+                      </button>
+                      <button onClick={() => openEdit(d)} className="btn-secondary btn-sm">
+                        <Edit className="w-3 h-3" /> Edit
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
