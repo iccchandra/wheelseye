@@ -90,6 +90,17 @@ export const StopsPage: React.FC = () => {
     }
   }, []);
 
+  // Listen for popup button clicks
+  useEffect(() => {
+    const handler = (e: any) => {
+      const vid = e.detail;
+      const v = vehicles.find((veh: any) => veh.id === vid);
+      if (v) { setSelectedVehicle(v); mapRef.current?.closePopup(); }
+    };
+    document.addEventListener('select-vehicle', handler);
+    return () => document.removeEventListener('select-vehicle', handler);
+  }, [vehicles]);
+
   // Place all vehicle markers on map
   useEffect(() => {
     if (!mapRef.current || !vehicles.length) return;
@@ -105,17 +116,60 @@ export const StopsPage: React.FC = () => {
       if (markersRef.current[v.id]) {
         markersRef.current[v.id].setLatLng([v.currentLat, v.currentLng]).setIcon(icon);
       } else {
-        const marker = L.marker([v.currentLat, v.currentLng], { icon })
-          .on('click', () => setSelectedVehicle(v))
-          .bindTooltip(`
-            <div style="font-family:Inter,system-ui,sans-serif;min-width:160px">
-              <div style="font-weight:700;font-size:13px;margin-bottom:4px">${v.regNumber}</div>
-              <div style="font-size:11px;color:#64748b">${v.make || ''} ${v.model || ''} · ${v.type || ''}</div>
-              <div style="font-size:11px;color:#64748b;margin-top:2px">${v.ownerName || '—'}</div>
-              <div style="font-size:12px;font-weight:600;margin-top:6px;color:${STATUS_COLORS[v.status]?.color || '#94a3b8'}">${v.lastSpeed ?? 0} km/h</div>
-              <div style="font-size:10px;color:#94a3b8;margin-top:2px">${v.lastPingAt ? new Date(v.lastPingAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'No ping'}</div>
+        const sc = STATUS_COLORS[v.status] || STATUS_COLORS.INACTIVE;
+        const pingTime = v.lastPingAt ? new Date(v.lastPingAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }) : 'No data';
+        const speedColor = v.lastSpeed > 60 ? '#ef4444' : v.lastSpeed > 0 ? '#10b981' : '#94a3b8';
+
+        const popupHtml = `
+          <div style="font-family:Inter,system-ui,sans-serif;min-width:240px;padding:4px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <div style="width:40px;height:40px;border-radius:10px;background:${sc.bg};display:flex;align-items:center;justify-content:center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${sc.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18h2a1 1 0 0 0 1-1v-3.28a1 1 0 0 0-.684-.948l-1.923-.641a1 1 0 0 1-.684-.949V8a1 1 0 0 0-1-1h-1"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>
+                </svg>
+              </div>
+              <div style="flex:1">
+                <div style="font-weight:800;font-size:15px;color:#0f172a;letter-spacing:-0.3px">${v.regNumber}</div>
+                <div style="font-size:11px;color:#64748b;margin-top:1px">${v.make || ''} ${v.model || ''}</div>
+              </div>
+              <div style="padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${sc.bg};color:${sc.color}">${sc.label}</div>
             </div>
-          `, { direction: 'top', offset: [0, -10] });
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+              <div style="background:#f8fafc;border-radius:8px;padding:8px 10px;text-align:center">
+                <div style="font-size:20px;font-weight:800;color:${speedColor};font-family:'DM Mono',monospace;letter-spacing:-1px">${v.lastSpeed ?? 0}</div>
+                <div style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">km/h</div>
+              </div>
+              <div style="background:#f8fafc;border-radius:8px;padding:8px 10px;text-align:center">
+                <div style="font-size:13px;font-weight:700;color:#0f172a">${v.type || '—'}</div>
+                <div style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">${v.capacityMT || 0} MT</div>
+              </div>
+            </div>
+            <div style="border-top:1px solid #f1f5f9;padding-top:8px;display:flex;flex-direction:column;gap:5px">
+              <div style="display:flex;justify-content:space-between;font-size:11px">
+                <span style="color:#94a3b8">Owner</span>
+                <span style="font-weight:600;color:#334155">${v.ownerName || '—'}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px">
+                <span style="color:#94a3b8">Last Ping</span>
+                <span style="font-weight:600;color:#334155">${pingTime}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:11px">
+                <span style="color:#94a3b8">Coordinates</span>
+                <span style="font-weight:500;color:#64748b;font-size:10px">${v.currentLat.toFixed(4)}, ${v.currentLng.toFixed(4)}</span>
+              </div>
+            </div>
+            <button onclick="document.dispatchEvent(new CustomEvent('select-vehicle',{detail:'${v.id}'}))"
+              style="width:100%;margin-top:10px;padding:8px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.2px;box-shadow:0 2px 8px rgba(37,99,235,0.25)">
+              View Stops & Track →
+            </button>
+          </div>
+        `;
+
+        const marker = L.marker([v.currentLat, v.currentLng], { icon })
+          .on('click', () => {
+            marker.openPopup();
+          })
+          .bindPopup(popupHtml, { maxWidth: 280, className: 'vehicle-popup' });
         marker.addTo(map);
         markersRef.current[v.id] = marker;
       }
