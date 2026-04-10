@@ -1,0 +1,241 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Surface — clean whites with subtle warmth */
+  --bg-primary:     #ffffff;
+  --bg-secondary:   #f4f6f9;
+  --bg-tertiary:    #ebeef3;
+  --bg-elevated:    #ffffff;
+  --bg-glass:       rgba(255,255,255,0.72);
+  --bg-overlay:     rgba(15,23,42,0.5);
+
+  /* Text — high contrast, rich blacks */
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary:  #94a3b8;
+  --text-inverse:   #ffffff;
+
+  /* Borders */
+  --border:         #e2e8f0;
+  --border-strong:  #cbd5e1;
+
+  /* Brand — vibrant blue gradient spectrum */
+  --accent:         #3b82f6;
+  --accent-hover:   #2563eb;
+  --accent-light:   #eff6ff;
+  --accent-text:    #1d4ed8;
+  --accent-gradient: linear-gradient(135deg, #3b82f6, #8b5cf6);
+
+  /* Vibrant status colors */
+  --green:          #10b981;
+  --green-light:    #ecfdf5;
+  --green-gradient: linear-gradient(135deg, #10b981, #34d399);
+  --orange:         #f59e0b;
+  --orange-light:   #fffbeb;
+  --orange-gradient:linear-gradient(135deg, #f59e0b, #fbbf24);
+  --red:            #ef4444;
+  --red-light:      #fef2f2;
+  --red-gradient:   linear-gradient(135deg, #ef4444, #f87171);
+  --purple:         #8b5cf6;
+  --purple-light:   #f5f3ff;
+  --purple-gradient:linear-gradient(135deg, #8b5cf6, #a78bfa);
+  --cyan:           #06b6d4;
+  --cyan-light:     #ecfeff;
+  --cyan-gradient:  linear-gradient(135deg, #06b6d4, #22d3ee);
+  --pink:           #ec4899;
+  --pink-light:     #fdf2f8;
+  --pink-gradient:  linear-gradient(135deg, #ec4899, #f472b6);
+  --indigo:         #6366f1;
+  --indigo-light:   #eef2ff;
+
+  /* Radius */
+  --radius-sm:      8px;
+  --radius-md:      12px;
+  --radius-lg:      16px;
+  --radius-xl:      24px;
+  --radius-full:    9999px;
+
+  /* Shadows — layered for depth */
+  --shadow-xs:      0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:      0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --shadow-lg:      0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+  --shadow-xl:      0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.04);
+  --shadow-glow:    0 0 20px rgba(59,130,246,0.15);
+  --shadow-focus:   0 0 0 3px rgba(59,130,246,0.25);
+  --shadow-colored: 0 4px 14px rgba(59,130,246,0.25);
+
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Dark Mode ─────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary:     #0f172a;
+    --bg-secondary:   #020617;
+    --bg-tertiary:    #1e293b;
+    --bg-elevated:    #1e293b;
+    --bg-glass:       rgba(15,23,42,0.75);
+    --bg-overlay:     rgba(0,0,0,0.7);
+    --text-primary:   #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-tertiary:  #64748b;
+    --border:         #1e293b;
+    --border-strong:  #334155;
+    --accent:         #60a5fa;
+    --accent-hover:   #3b82f6;
+    --accent-light:   rgba(96,165,250,0.1);
+    --accent-text:    #93bbfc;
+    --accent-gradient: linear-gradient(135deg, #60a5fa, #a78bfa);
+    --green:          #34d399;
+    --green-light:    rgba(52,211,153,0.1);
+    --orange:         #fbbf24;
+    --orange-light:   rgba(251,191,36,0.1);
+    --red:            #f87171;
+    --red-light:      rgba(248,113,113,0.1);
+    --purple:         #a78bfa;
+    --purple-light:   rgba(167,139,250,0.1);
+    --cyan:           #22d3ee;
+    --cyan-light:     rgba(34,211,238,0.1);
+    --pink:           #f472b6;
+    --pink-light:     rgba(244,114,182,0.1);
+    --indigo:         #818cf8;
+    --indigo-light:   rgba(129,140,248,0.1);
+    --shadow-xs:      0 1px 2px rgba(0,0,0,0.3);
+    --shadow-sm:      0 1px 3px rgba(0,0,0,0.4);
+    --shadow-md:      0 4px 6px rgba(0,0,0,0.4);
+    --shadow-lg:      0 10px 15px rgba(0,0,0,0.4);
+    --shadow-xl:      0 20px 25px rgba(0,0,0,0.5);
+    --shadow-glow:    0 0 20px rgba(96,165,250,0.15);
+    --shadow-focus:   0 0 0 3px rgba(96,165,250,0.3);
+    --shadow-colored: 0 4px 14px rgba(96,165,250,0.2);
+  }
+}
+
+body { height: 100vh; overflow: hidden; }
+#root { height: 100vh; display: flex; flex-direction: column; }
+
+/* ─── Global Transitions ────────────────────────────────────────── */
+a, button, input, select, textarea, div, span {
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+}
+
+/* ─── Inputs — Glass style ──────────────────────────────────────── */
+input, select, textarea {
+  font-family: inherit;
+  font-size: 13px;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: var(--shadow-focus) !important;
+  outline: none;
+}
+input::placeholder, textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────── */
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+button:active:not(:disabled) { transform: scale(0.97); }
+button:disabled { cursor: not-allowed; opacity: 0.6; }
+
+/* ─── Tables — Modern elevated rows ────────────────────────────── */
+table { border-spacing: 0; width: 100%; }
+thead tr { background: var(--bg-secondary) !important; }
+thead th {
+  padding: 10px 14px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-tertiary) !important;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid var(--border) !important;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-secondary) !important;
+}
+tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+tbody tr:hover {
+  background: var(--accent-light) !important;
+}
+tbody td {
+  padding: 12px 14px !important;
+}
+
+/* ─── Scrollbars — Minimal ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* ─── Animations ────────────────────────────────────────────────── */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideIn { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+@keyframes scaleIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes gradient { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+/* ─── Utility Classes ───────────────────────────────────────────── */
+.animate-in { animation: fadeIn 0.3s ease both; }
+.animate-up { animation: fadeInUp 0.4s ease both; }
+.animate-scale { animation: scaleIn 0.2s ease both; }
+
+/* ─── Cards ─────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* ─── Badges ────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* ─── Gradient text ─────────────────────────────────────────────── */
+.gradient-text {
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Leaflet overrides ─────────────────────────────────────────── */
+.leaflet-container { font-family: inherit; border-radius: var(--radius-md); }
+.leaflet-control-attribution { font-size: 10px; opacity: 0.5; }
+.leaflet-popup-content-wrapper { border-radius: var(--radius-sm) !important; box-shadow: var(--shadow-lg) !important; }
+.leaflet-tooltip { border-radius: var(--radius-sm) !important; box-shadow: var(--shadow-md) !important; border: 1px solid var(--border) !important; padding: 6px 10px !important; }
+
+/* ─── Selection ─────────────────────────────────────────────────── */
+::selection { background: rgba(59,130,246,0.2); color: inherit; }
