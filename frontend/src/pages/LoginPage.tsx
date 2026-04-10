@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Truck } from 'lucide-react';
 import { authApi } from '../services/api';
 
 type Step = 'phone' | 'otp';
@@ -15,10 +16,8 @@ export const LoginPage: React.FC = () => {
   const sendOtp = async () => {
     if (phone.length !== 10) { setError('Enter valid 10-digit mobile number'); return; }
     setLoading(true); setError('');
-    try {
-      await authApi.sendOtp(phone);
-      setStep('otp');
-    } catch { setError('Failed to send OTP. Try again.'); }
+    try { await authApi.sendOtp(phone); setStep('otp'); }
+    catch { setError('Failed to send OTP. Try again.'); }
     finally { setLoading(false); }
   };
 
@@ -33,108 +32,60 @@ export const LoginPage: React.FC = () => {
     finally { setLoading(false); }
   };
 
-  const input: React.CSSProperties = {
-    width: '100%', padding: '14px 16px', border: '1px solid rgba(255,255,255,0.15)',
-    borderRadius: 12, fontSize: 15, background: 'rgba(255,255,255,0.06)',
-    color: '#f1f5f9', outline: 'none', backdropFilter: 'blur(8px)',
-  };
-
-  const btn: React.CSSProperties = {
-    width: '100%', padding: '14px', borderRadius: 12,
-    background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-    color: '#fff', border: 'none', fontSize: 15, fontWeight: 700,
-    cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1,
-    boxShadow: '0 4px 20px rgba(59,130,246,0.4)',
-    letterSpacing: '0.3px',
-  };
-
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 40%, #312e81 70%, #1e293b 100%)',
-      position: 'relative', overflow: 'hidden',
-    }}>
-      {/* Animated gradient orbs */}
-      <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%)', top: '-10%', right: '-5%', animation: 'pulse 4s ease infinite' }} />
-      <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.12), transparent 70%)', bottom: '-15%', left: '-10%', animation: 'pulse 5s ease infinite 1s' }} />
-      <div style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(6,182,212,0.1), transparent 70%)', top: '40%', left: '20%', animation: 'pulse 6s ease infinite 2s' }} />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
+      {/* Animated background orbs */}
+      <div className="absolute w-96 h-96 rounded-full bg-brand-500/10 blur-3xl -top-20 -right-20 animate-pulse" />
+      <div className="absolute w-[500px] h-[500px] rounded-full bg-violet-500/8 blur-3xl -bottom-32 -left-20 animate-pulse [animation-delay:1s]" />
+      <div className="absolute w-64 h-64 rounded-full bg-cyan-500/5 blur-3xl top-1/3 left-1/4 animate-pulse [animation-delay:2s]" />
 
-      <div style={{
-        background: 'rgba(15,23,42,0.6)', borderRadius: 24, padding: '44px 40px', width: 400,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        backdropFilter: 'blur(20px)', position: 'relative', zIndex: 1,
-        animation: 'fadeIn 0.5s ease',
-      }}>
-
+      <div className="relative z-10 bg-slate-900/60 backdrop-blur-2xl border border-white/[0.08] rounded-3xl p-10 w-[400px] shadow-2xl animate-fade-in">
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{
-            width: 56, height: 56, borderRadius: 16, margin: '0 auto 14px',
-            background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontSize: 20, fontWeight: 800,
-            boxShadow: '0 8px 24px rgba(59,130,246,0.35)',
-          }}>FT</div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.3px' }}>FreightTrack</div>
-          <div style={{ fontSize: 13, color: '#64748b', marginTop: 4, fontWeight: 500 }}>Fleet operations dashboard</div>
+        <div className="text-center mb-9">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-500 mx-auto mb-4 flex items-center justify-center shadow-glow">
+            <Truck size={28} className="text-white" />
+          </div>
+          <h1 className="text-2xl font-extrabold text-white tracking-tight">FreightTrack</h1>
+          <p className="text-slate-400 text-sm mt-1">Fleet operations dashboard</p>
         </div>
 
         {step === 'phone' ? (
           <>
-            <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 20, textAlign: 'center' }}>
-              Sign in with your registered mobile
+            <p className="text-slate-400 text-sm text-center mb-5">Sign in with your registered mobile</p>
+            <div className="flex gap-2 mb-4">
+              <span className="px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.1] text-slate-400 text-sm font-semibold">+91</span>
+              <input value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                onKeyDown={e => e.key === 'Enter' && sendOtp()} placeholder="Mobile number" maxLength={10} autoFocus
+                className="flex-1 px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.1] text-white text-sm placeholder-slate-500 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-              <span style={{
-                padding: '14px 14px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12,
-                fontSize: 15, background: 'rgba(255,255,255,0.04)', color: '#94a3b8',
-                whiteSpace: 'nowrap', fontWeight: 600,
-              }}>+91</span>
-              <input
-                value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                onKeyDown={e => e.key === 'Enter' && sendOtp()}
-                placeholder="Mobile number" maxLength={10} autoFocus style={input}
-              />
-            </div>
-            {error && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, padding: '10px 14px', background: 'rgba(239,68,68,0.1)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.15)' }}>{error}</div>}
-            <button onClick={sendOtp} disabled={loading} style={btn}>
+            {error && <div className="text-red-400 text-sm mb-3 bg-red-500/10 border border-red-500/15 rounded-xl px-4 py-2.5">{error}</div>}
+            <button onClick={sendOtp} disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-violet-600 text-white font-bold text-sm shadow-btn-primary hover:shadow-glow disabled:opacity-60 transition-all active:scale-[0.98]">
               {loading ? 'Sending OTP...' : 'Continue'}
             </button>
           </>
         ) : (
           <>
-            <div style={{ fontSize: 14, color: '#94a3b8', marginBottom: 4, textAlign: 'center' }}>
-              OTP sent to <span style={{ fontWeight: 700, color: '#e2e8f0' }}>+91 {phone}</span>
+            <p className="text-slate-400 text-sm text-center mb-1">OTP sent to <span className="text-white font-semibold">+91 {phone}</span></p>
+            <div className="text-center">
+              <button onClick={() => setStep('phone')} className="text-brand-400 text-sm font-semibold hover:text-brand-300 mb-5 inline-block">Change number</button>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <button onClick={() => setStep('phone')} style={{ fontSize: 13, color: '#60a5fa', background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginBottom: 20, fontWeight: 600 }}>
-                Change number
-              </button>
-            </div>
-            <input
-              value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              onKeyDown={e => e.key === 'Enter' && verifyOtp()}
-              placeholder="------" maxLength={6} autoFocus
-              style={{ ...input, fontSize: 28, letterSpacing: 14, textAlign: 'center', fontWeight: 700, marginBottom: 16 }}
-            />
-            {error && <div style={{ fontSize: 13, color: '#f87171', marginBottom: 12, padding: '10px 14px', background: 'rgba(239,68,68,0.1)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.15)' }}>{error}</div>}
-            <button onClick={verifyOtp} disabled={loading} style={btn}>
+            <input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onKeyDown={e => e.key === 'Enter' && verifyOtp()} placeholder="------" maxLength={6} autoFocus
+              className="w-full px-4 py-4 rounded-xl bg-white/[0.04] border border-white/[0.1] text-white text-2xl font-bold tracking-[14px] text-center placeholder-slate-600 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 mb-4 transition-all" />
+            {error && <div className="text-red-400 text-sm mb-3 bg-red-500/10 border border-red-500/15 rounded-xl px-4 py-2.5">{error}</div>}
+            <button onClick={verifyOtp} disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-violet-600 text-white font-bold text-sm shadow-btn-primary hover:shadow-glow disabled:opacity-60 transition-all active:scale-[0.98]">
               {loading ? 'Verifying...' : 'Verify & Login'}
             </button>
-            <button onClick={sendOtp} style={{
-              width: '100%', marginTop: 12, padding: '12px', borderRadius: 12,
-              background: 'rgba(255,255,255,0.04)', color: '#94a3b8',
-              border: '1px solid rgba(255,255,255,0.08)', fontSize: 13, fontWeight: 600,
-            }}>
+            <button onClick={sendOtp}
+              className="w-full mt-3 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-slate-400 text-sm font-medium hover:bg-white/[0.06] transition-all">
               Resend OTP
             </button>
           </>
         )}
 
-        <div style={{ marginTop: 28, textAlign: 'center', fontSize: 11, color: '#475569' }}>
-          Powered by <span style={{ fontWeight: 600, color: '#64748b' }}>WheelsEye</span>
-        </div>
+        <p className="text-center text-slate-600 text-[11px] mt-7">Powered by <span className="font-semibold text-slate-500">WheelsEye</span></p>
       </div>
     </div>
   );
