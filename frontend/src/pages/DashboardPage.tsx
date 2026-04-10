@@ -5,7 +5,7 @@ import { LiveMap } from '../components/dashboard/LiveMap';
 import { ShipmentSidebar } from '../components/dashboard/ShipmentSidebar';
 import { DetailPanel } from '../components/dashboard/DetailPanel';
 import { useGpsSocket } from '../hooks/useGpsSocket';
-import { shipmentApi, gpsApi, reportsApi, reminderApi } from '../services/api';
+import { shipmentApi, gpsApi, reportsApi, reminderApi, vehicleApi } from '../services/api';
 import { useGpsStore } from '../store/gpsStore';
 
 type Tab = 'live' | 'history' | 'geo';
@@ -44,6 +44,7 @@ export const DashboardPage: React.FC = () => {
   const { data: remindersData } = useQuery('reminders-today', reminderApi.getToday, { refetchInterval: 60000 });
   const { data: geoEventsData } = useQuery('geofence-events', () => reportsApi.getGeofenceEvents(15), { refetchInterval: 30000 });
   const { data: vehicleLocsData } = useQuery('vehicle-locations', reportsApi.getVehicleLocations, { refetchInterval: 60000 });
+  const { data: allVehiclesData } = useQuery('vehicles-all', () => vehicleApi.getAll(), { refetchInterval: 60000 });
 
   const markReadMut = useMutation((id: string) => reminderApi.markAsRead(id), { onSuccess: () => qc.invalidateQueries('reminders-today') });
 
@@ -54,6 +55,7 @@ export const DashboardPage: React.FC = () => {
   const todayReminders = remindersData?.data || [];
   const geoEvents = geoEventsData?.data || [];
   const vehicleLocs = vehicleLocsData?.data || [];
+  const allVehicles = allVehiclesData?.data || [];
   const unread = getUnreadAlertCount();
 
   return (
@@ -98,7 +100,7 @@ export const DashboardPage: React.FC = () => {
                 </button>
               ))}
             </div>
-            <LiveMap shipments={shipments} selectedId={selected?.id} onSelectShipment={setSelected} geofences={tab === 'geo' ? geofences : []} historyPath={tab === 'history' ? history : []} tab={tab} />
+            <LiveMap shipments={shipments} vehicles={allVehicles} selectedId={selected?.id} onSelectShipment={setSelected} geofences={tab === 'geo' ? geofences : []} historyPath={tab === 'history' ? history : []} tab={tab} />
           </div>
 
           {/* Bottom widgets */}
