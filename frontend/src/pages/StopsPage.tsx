@@ -3,7 +3,7 @@ import { useQuery } from 'react-query';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { gpsApi, vehicleApi } from '../services/api';
-import { Truck, OctagonX, TrendingUp, Route as RouteIcon, Gauge, BarChart3, Clock, X, ChevronRight, MapPin } from 'lucide-react';
+import { Truck, Octagon, TrendingUp, Route as RouteIcon, Gauge, BarChart3, Clock, X, ChevronRight, MapPin } from 'lucide-react';
 
 const STATUS_COLORS: Record<string, { color: string; bg: string; label: string }> = {
   AVAILABLE:   { color: '#10b981', bg: '#ecfdf5', label: 'Available' },
