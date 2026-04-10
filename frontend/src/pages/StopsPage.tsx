@@ -3,45 +3,154 @@ import { useQuery } from 'react-query';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { gpsApi, vehicleApi } from '../services/api';
-import { Octagon, TrendingUp, Route, Gauge, BarChart3, Clock } from 'lucide-react';
+import { Truck, OctagonX, TrendingUp, Route as RouteIcon, Gauge, BarChart3, Clock, X, ChevronRight, MapPin } from 'lucide-react';
+
+const STATUS_COLORS: Record<string, { color: string; bg: string; label: string }> = {
+  AVAILABLE:   { color: '#10b981', bg: '#ecfdf5', label: 'Available' },
+  ON_TRIP:     { color: '#3b82f6', bg: '#eff6ff', label: 'On Trip' },
+  MAINTENANCE: { color: '#f59e0b', bg: '#fffbeb', label: 'Maintenance' },
+  INACTIVE:    { color: '#94a3b8', bg: '#f1f5f9', label: 'Inactive' },
+};
+
+function truckMapIcon(regNo: string, status: string, selected: boolean) {
+  const sc = STATUS_COLORS[status] || STATUS_COLORS.INACTIVE;
+  return L.divIcon({
+    className: '',
+    html: `
+      <div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15))">
+        <div style="
+          background:${selected ? sc.color : '#ffffff'};
+          border:2.5px solid ${sc.color};
+          border-radius:10px;
+          padding:4px 8px 4px 6px;
+          font-size:11px;
+          font-weight:700;
+          color:${selected ? '#fff' : sc.color};
+          white-space:nowrap;
+          display:flex;
+          align-items:center;
+          gap:4px;
+          font-family:Inter,system-ui,sans-serif;
+          ${selected ? 'box-shadow:0 0 0 3px ' + sc.color + '40;' : ''}
+        ">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${selected ? '#fff' : sc.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+            <path d="M15 18h2a1 1 0 0 0 1-1v-3.28a1 1 0 0 0-.684-.948l-1.923-.641a1 1 0 0 1-.684-.949V8a1 1 0 0 0-1-1h-1"/>
+            <circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>
+          </svg>
+          ${regNo}
+        </div>
+        <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid ${sc.color};margin-top:-1px"></div>
+      </div>
+    `,
+    iconAnchor: [40, 48],
+    popupAnchor: [0, -48],
+  });
+}
 
 export const StopsPage: React.FC = () => {
-  const [vehicleId, setVehicleId] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [searchText, setSearchText] = useState('');
   const mapRef = useRef<L.Map | null>(null);
-  const layersRef = useRef<L.Layer[]>([]);
+  const markersRef = useRef<Record<string, L.Marker>>({});
+  const stopsLayersRef = useRef<L.Layer[]>([]);
 
-  const { data: vehiclesData } = useQuery('vehicles-all', () => vehicleApi.getAll());
-  const vehicles = vehiclesData?.data || [];
+  const { data: vehiclesData } = useQuery('vehicles-all', () => vehicleApi.getAll(), { refetchInterval: 60000 });
+  const vehicles: any[] = vehiclesData?.data || [];
 
-  const { data: stopsData, isLoading } = useQuery(
-    ['stops', vehicleId, date],
-    () => gpsApi.getStops(vehicleId, date),
-    { enabled: !!vehicleId },
+  const { data: stopsData, isLoading: stopsLoading } = useQuery(
+    ['stops', selectedVehicle?.id, date],
+    () => gpsApi.getStops(selectedVehicle.id, date),
+    { enabled: !!selectedVehicle?.id },
   );
 
   const result = stopsData?.data;
   const segments = result?.segments || [];
   const summary = result?.summary || {};
 
-  // Init map when container appears, destroy when it disappears
+  const filteredVehicles = vehicles.filter((v: any) =>
+    !searchText || v.regNumber?.toLowerCase().includes(searchText.toLowerCase()) || v.ownerName?.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  // Init map
   const mapContainerRef = React.useCallback((node: HTMLDivElement | null) => {
     if (node && !mapRef.current) {
-      mapRef.current = L.map(node, { zoomControl: true }).setView([20.59, 78.96], 5);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM' }).addTo(mapRef.current);
+      mapRef.current = L.map(node, { zoomControl: true, attributionControl: false }).setView([20.59, 78.96], 5);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OSM',
+      }).addTo(mapRef.current);
+      L.control.attribution({ position: 'bottomright', prefix: false }).addTo(mapRef.current);
       setTimeout(() => mapRef.current?.invalidateSize(), 100);
     } else if (!node && mapRef.current) {
       mapRef.current.remove();
       mapRef.current = null;
-      layersRef.current = [];
+      markersRef.current = {};
+      stopsLayersRef.current = [];
     }
   }, []);
 
-  // Render markers
+  // Place all vehicle markers on map
+  useEffect(() => {
+    if (!mapRef.current || !vehicles.length) return;
+    const map = mapRef.current;
+    const bounds: [number, number][] = [];
+
+    vehicles.forEach((v: any) => {
+      if (!v.currentLat || !v.currentLng) return;
+      const regShort = v.regNumber?.split(' ').slice(-2).join(' ') || '??';
+      const isSelected = selectedVehicle?.id === v.id;
+      const icon = truckMapIcon(regShort, v.status, isSelected);
+
+      if (markersRef.current[v.id]) {
+        markersRef.current[v.id].setLatLng([v.currentLat, v.currentLng]).setIcon(icon);
+      } else {
+        const marker = L.marker([v.currentLat, v.currentLng], { icon })
+          .on('click', () => setSelectedVehicle(v))
+          .bindTooltip(`
+            <div style="font-family:Inter,system-ui,sans-serif;min-width:160px">
+              <div style="font-weight:700;font-size:13px;margin-bottom:4px">${v.regNumber}</div>
+              <div style="font-size:11px;color:#64748b">${v.make || ''} ${v.model || ''} · ${v.type || ''}</div>
+              <div style="font-size:11px;color:#64748b;margin-top:2px">${v.ownerName || '—'}</div>
+              <div style="font-size:12px;font-weight:600;margin-top:6px;color:${STATUS_COLORS[v.status]?.color || '#94a3b8'}">${v.lastSpeed ?? 0} km/h</div>
+              <div style="font-size:10px;color:#94a3b8;margin-top:2px">${v.lastPingAt ? new Date(v.lastPingAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'No ping'}</div>
+            </div>
+          `, { direction: 'top', offset: [0, -10] });
+        marker.addTo(map);
+        markersRef.current[v.id] = marker;
+      }
+      bounds.push([v.currentLat, v.currentLng]);
+    });
+
+    // Remove stale
+    Object.keys(markersRef.current).filter(id => !vehicles.find((v: any) => v.id === id)).forEach(id => {
+      markersRef.current[id].remove();
+      delete markersRef.current[id];
+    });
+
+    if (bounds.length && !selectedVehicle) {
+      map.fitBounds(bounds as any, { padding: [50, 50], maxZoom: 12 });
+    }
+  }, [vehicles, selectedVehicle]);
+
+  // When a vehicle is selected, fly to it and show stops
   useEffect(() => {
     if (!mapRef.current) return;
-    layersRef.current.forEach(l => l.remove());
-    layersRef.current = [];
+
+    // Clear previous stops layers
+    stopsLayersRef.current.forEach(l => l.remove());
+    stopsLayersRef.current = [];
+
+    if (selectedVehicle?.currentLat) {
+      mapRef.current.flyTo([selectedVehicle.currentLat, selectedVehicle.currentLng], 10, { duration: 0.8 });
+    }
+  }, [selectedVehicle?.id]);
+
+  // Render stop markers and route on map
+  useEffect(() => {
+    if (!mapRef.current) return;
+    stopsLayersRef.current.forEach(l => l.remove());
+    stopsLayersRef.current = [];
     if (!segments.length) return;
 
     const bounds: [number, number][] = [];
@@ -52,152 +161,210 @@ export const StopsPage: React.FC = () => {
       if (seg.type === 'STOPPED') {
         stopIdx++;
         const marker = L.circleMarker([seg.lat, seg.lng], {
-          radius: Math.min(6 + seg.durationMinutes / 10, 18),
-          color: '#c93c37', fillColor: '#c93c37', fillOpacity: 0.7, weight: 2,
+          radius: Math.min(7 + seg.durationMinutes / 8, 20),
+          color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.65, weight: 2.5,
         }).addTo(mapRef.current!);
-        marker.bindTooltip(
-          `<div style="font-size:12px"><b>Stop #${stopIdx}</b><br/>${seg.durationFormatted}<br/>${seg.address || `${seg.lat.toFixed(4)}, ${seg.lng.toFixed(4)}`}<br/><span style="color:#999">${new Date(seg.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} — ${new Date(seg.endTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span></div>`,
-          { direction: 'top', className: '' },
-        );
-        layersRef.current.push(marker);
-      } else {
-        // Running segment — draw line
-        const coords: [number, number][] = [[seg.lat, seg.lng], [seg.endLat, seg.endLng]];
-        const line = L.polyline(coords, { color: '#2d8a4e', weight: 3, opacity: 0.6 }).addTo(mapRef.current!);
-        layersRef.current.push(line);
+        marker.bindTooltip(`
+          <div style="font-family:Inter,system-ui,sans-serif">
+            <div style="font-weight:700;font-size:12px;color:#ef4444">Stop #${stopIdx} · ${seg.durationFormatted}</div>
+            <div style="font-size:11px;color:#475569;margin-top:3px">${seg.address || `${seg.lat.toFixed(4)}, ${seg.lng.toFixed(4)}`}</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px">${new Date(seg.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} — ${new Date(seg.endTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+          </div>
+        `, { direction: 'top' });
+        stopsLayersRef.current.push(marker);
+      } else if (seg.endLat) {
+        const line = L.polyline([[seg.lat, seg.lng], [seg.endLat, seg.endLng]], {
+          color: '#10b981', weight: 3.5, opacity: 0.7, dashArray: '8 4',
+        }).addTo(mapRef.current!);
+        stopsLayersRef.current.push(line);
       }
     });
 
-    if (bounds.length > 0) {
-      mapRef.current.fitBounds(bounds as any, { padding: [40, 40] });
+    if (bounds.length > 1) {
+      mapRef.current.fitBounds(bounds as any, { padding: [60, 60] });
     }
   }, [segments]);
 
   const totalMin = (summary.totalStopped || 0) + (summary.totalRunning || 0);
 
-  const STAT_ICONS = [Octagon, Clock, TrendingUp, Route, Gauge, BarChart3];
-
   return (
-    <div className="page h-full flex flex-col gap-4">
+    <div className="flex h-full">
+      {/* Left sidebar — vehicle list */}
+      <div className="w-72 flex-shrink-0 bg-white border-r border-slate-200 flex flex-col">
+        <div className="p-3 border-b border-slate-200">
+          <h1 className="text-sm font-bold text-slate-800 mb-2">Fleet Tracking</h1>
+          <div className="relative">
+            <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input value={searchText} onChange={e => setSearchText(e.target.value)} placeholder="Search vehicle..."
+              className="input !py-2 !pl-8 !text-xs" />
+          </div>
+        </div>
 
-      {/* Header */}
-      <div className="page-header">
-        <h1 className="page-title">Stops &amp; Activity</h1>
-        <div className="flex gap-2">
-          <select value={vehicleId} onChange={e => setVehicleId(e.target.value)} className="select w-auto">
-            <option value="">Select vehicle</option>
-            {vehicles.map((v: any) => <option key={v.id} value={v.id}>{v.regNumber}</option>)}
-          </select>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="input w-auto" />
+        <div className="flex-1 overflow-y-auto">
+          {filteredVehicles.map((v: any) => {
+            const sc = STATUS_COLORS[v.status] || STATUS_COLORS.INACTIVE;
+            const isActive = selectedVehicle?.id === v.id;
+            return (
+              <div key={v.id} onClick={() => setSelectedVehicle(isActive ? null : v)}
+                className={`px-3 py-2.5 border-b border-slate-100 cursor-pointer transition-all duration-150 ${
+                  isActive ? 'bg-blue-50 border-l-[3px] border-l-brand-500' : 'hover:bg-slate-50 border-l-[3px] border-l-transparent'
+                }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: sc.bg }}>
+                      <Truck size={14} style={{ color: sc.color }} />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-800">{v.regNumber}</div>
+                      <div className="text-[10px] text-slate-400">{v.make} {v.model}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] font-semibold" style={{ color: sc.color }}>{sc.label}</div>
+                    <div className="text-[10px] text-slate-400">{v.lastSpeed ?? 0} km/h</div>
+                  </div>
+                </div>
+                {v.currentLat && (
+                  <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                    <span className={`w-1.5 h-1.5 rounded-full ${v.lastSpeed > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+                    {v.lastPingAt ? new Date(v.lastPingAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'No GPS'}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {filteredVehicles.length === 0 && <div className="p-6 text-center text-slate-400 text-xs">No vehicles found</div>}
+        </div>
+
+        <div className="p-2.5 border-t border-slate-200 bg-slate-50 text-[10px] text-slate-400 text-center">
+          {vehicles.length} vehicles · {vehicles.filter((v: any) => v.currentLat).length} with GPS
         </div>
       </div>
 
-      {!vehicleId && <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Select a vehicle to view stop analysis</div>}
+      {/* Center — map */}
+      <div className="flex-1 relative">
+        <div ref={mapContainerRef} className="w-full h-full" />
 
-      {vehicleId && isLoading && <div className="text-center py-10 text-slate-400">Loading...</div>}
+        {/* Date picker overlay */}
+        <div className="absolute top-3 left-3 z-[500]">
+          <input type="date" value={date} onChange={e => setDate(e.target.value)}
+            className="input !py-1.5 !px-3 !text-xs !w-auto shadow-md !border-slate-300 !bg-white/95 backdrop-blur-sm" />
+        </div>
 
-      {vehicleId && !isLoading && (
-        <>
-          {/* Summary cards */}
-          <div className="grid grid-cols-6 gap-2.5">
-            {[
-              { label: 'Stops', value: summary.stopCount || 0, color: 'text-red-500', bar: 'bg-red-500' },
-              { label: 'Stopped', value: summary.totalStoppedFormatted || '0m', color: 'text-red-500', bar: 'bg-red-500' },
-              { label: 'Running', value: summary.totalRunningFormatted || '0m', color: 'text-emerald-500', bar: 'bg-emerald-500' },
-              { label: 'Distance', value: `${summary.totalDistanceKm || 0} km`, color: 'text-brand-600', bar: 'bg-brand-600' },
-              { label: 'Max speed', value: `${summary.maxSpeed || 0} km/h`, color: 'text-amber-500', bar: 'bg-amber-500' },
-              { label: 'Utilisation', value: `${summary.runningPercent || 0}%`, color: 'text-emerald-500', bar: 'bg-emerald-500' },
-            ].map((c, idx) => {
-              const Icon = STAT_ICONS[idx];
-              return (
-                <div key={c.label} className="stat-card">
-                  <div className={`stat-card-bar ${c.bar}`} />
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Icon size={12} className="text-slate-400" />
-                    <span className="section-label !mb-0">{c.label}</span>
-                  </div>
-                  <div className={`text-lg font-bold ${c.color}`}>{c.value}</div>
-                </div>
-              );
-            })}
-          </div>
+        {/* Vehicle count badge */}
+        <div className="absolute top-3 right-3 z-[500] bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-md border border-slate-200 text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+          <Truck size={13} className="text-brand-500" />
+          {vehicles.filter((v: any) => v.currentLat).length} live
+        </div>
+      </div>
 
-          {/* Timeline bar */}
-          {totalMin > 0 && (
-            <div className="card p-3.5 px-4">
-              <div className="section-label mb-2">Timeline</div>
-              <div className="flex h-7 rounded-md overflow-hidden bg-slate-100">
-                {segments.map((seg: any, i: number) => {
-                  const pct = (seg.durationMinutes / totalMin) * 100;
-                  if (pct < 0.5) return null;
-                  return (
-                    <div key={i} title={`${seg.type === 'STOPPED' ? 'Stopped' : 'Running'} — ${seg.durationFormatted}\n${new Date(seg.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} – ${new Date(seg.endTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`}
-                      style={{
-                        width: `${pct}%`, minWidth: 2,
-                        borderRight: i < segments.length - 1 ? '1px solid white' : 'none',
-                      }}
-                      className={`cursor-pointer transition-opacity flex items-center justify-center ${
-                        seg.type === 'STOPPED' ? 'bg-red-500 opacity-80 hover:opacity-100' : 'bg-emerald-500 opacity-60 hover:opacity-100'
-                      }`}
-                    >
-                      {pct > 6 && <span className="text-[9px] text-white font-semibold">{seg.durationFormatted}</span>}
-                    </div>
-                  );
-                })}
+      {/* Right panel — stops detail (shows when vehicle selected) */}
+      {selectedVehicle && (
+        <div className="w-80 flex-shrink-0 bg-white border-l border-slate-200 flex flex-col animate-slide-in overflow-hidden">
+          {/* Vehicle header */}
+          <div className="p-3 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center"
+                style={{ background: STATUS_COLORS[selectedVehicle.status]?.bg }}>
+                <Truck size={18} style={{ color: STATUS_COLORS[selectedVehicle.status]?.color }} />
               </div>
-              <div className="flex justify-between mt-1 text-[10px] text-slate-400">
-                <span>{summary.firstActivity ? new Date(summary.firstActivity).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
-                <div className="flex gap-3">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500 inline-block" /> Stopped</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500 inline-block" /> Running</span>
-                </div>
-                <span>{summary.lastActivity ? new Date(summary.lastActivity).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+              <div>
+                <div className="text-sm font-bold text-slate-800">{selectedVehicle.regNumber}</div>
+                <div className="text-[11px] text-slate-400">{selectedVehicle.make} {selectedVehicle.model} · {selectedVehicle.type}</div>
               </div>
             </div>
-          )}
+            <button onClick={() => setSelectedVehicle(null)} className="btn-ghost !p-1.5 rounded-md">
+              <X size={16} />
+            </button>
+          </div>
 
-          {/* Map + segment list side by side */}
-          <div className="grid grid-cols-[1fr_320px] gap-3 flex-1 min-h-0">
-
-            {/* Map */}
-            <div ref={mapContainerRef} className="rounded-xl border border-slate-200 overflow-hidden min-h-[300px]" />
-
-            {/* Segment list */}
-            <div className="card overflow-y-auto">
-              <div className="p-3 px-3.5 border-b border-slate-200 text-xs font-semibold text-slate-500 sticky top-0 bg-white z-[1]">
-                {segments.length} segments
+          {stopsLoading ? (
+            <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">Loading stops...</div>
+          ) : segments.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center text-slate-400 text-xs text-center px-6">
+              No GPS activity for this vehicle on {date}
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto">
+              {/* Mini stats */}
+              <div className="grid grid-cols-3 gap-px bg-slate-200">
+                {[
+                  { label: 'Stops', value: summary.stopCount || 0, color: 'text-red-500' },
+                  { label: 'Running', value: summary.totalRunningFormatted || '0m', color: 'text-emerald-500' },
+                  { label: 'Distance', value: `${summary.totalDistanceKm || 0}km`, color: 'text-brand-600' },
+                ].map(c => (
+                  <div key={c.label} className="bg-white p-2.5 text-center">
+                    <div className="text-[10px] font-semibold text-slate-400 uppercase">{c.label}</div>
+                    <div className={`text-sm font-extrabold ${c.color}`}>{c.value}</div>
+                  </div>
+                ))}
               </div>
-              {segments.length === 0 && <div className="py-6 text-center text-slate-400 text-sm">No GPS data for this date</div>}
+
+              {/* Timeline bar */}
+              {totalMin > 0 && (
+                <div className="px-3 py-2.5 border-b border-slate-200">
+                  <div className="flex h-3 rounded overflow-hidden bg-slate-100">
+                    {segments.map((seg: any, i: number) => {
+                      const pct = (seg.durationMinutes / totalMin) * 100;
+                      if (pct < 0.5) return null;
+                      return (
+                        <div key={i} style={{ width: `${pct}%`, minWidth: 2, borderRight: i < segments.length - 1 ? '1px solid white' : 'none' }}
+                          className={`${seg.type === 'STOPPED' ? 'bg-red-500' : 'bg-emerald-500'} transition-opacity hover:opacity-100 ${seg.type === 'STOPPED' ? 'opacity-80' : 'opacity-50'}`}
+                          title={`${seg.type === 'STOPPED' ? 'Stopped' : 'Running'} ${seg.durationFormatted}`} />
+                      );
+                    })}
+                  </div>
+                  <div className="flex justify-between mt-1 text-[9px] text-slate-400">
+                    <span>{summary.firstActivity ? new Date(summary.firstActivity).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                    <div className="flex gap-2">
+                      <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-red-500" /> Stop</span>
+                      <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-sm bg-emerald-500" /> Run</span>
+                    </div>
+                    <span>{summary.lastActivity ? new Date(summary.lastActivity).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Segment list */}
               {segments.map((seg: any, i: number) => (
-                <div key={i} className="p-2.5 px-3.5 border-b border-slate-100 flex gap-2.5">
-                  <div className="flex flex-col items-center w-4 shrink-0">
-                    <div className={`w-2.5 h-2.5 rounded-full border-2 border-white shrink-0 ${seg.type === 'STOPPED' ? 'bg-red-500' : 'bg-emerald-500'}`} />
-                    {i < segments.length - 1 && <div className="w-0.5 flex-1 bg-slate-200 mt-0.5" />}
+                <div key={i} className="px-3 py-2 border-b border-slate-100 flex gap-2.5">
+                  <div className="flex flex-col items-center w-4 shrink-0 pt-0.5">
+                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-white ${seg.type === 'STOPPED' ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                    {i < segments.length - 1 && <div className="w-px flex-1 bg-slate-200 mt-1" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center">
-                      <span className={`text-xs font-semibold ${seg.type === 'STOPPED' ? 'text-red-500' : 'text-emerald-500'}`}>
+                      <span className={`text-[11px] font-bold ${seg.type === 'STOPPED' ? 'text-red-500' : 'text-emerald-600'}`}>
                         {seg.type === 'STOPPED' ? 'Stopped' : 'Running'}
                       </span>
-                      <span className="text-xs font-semibold text-slate-800">{seg.durationFormatted}</span>
+                      <span className="text-[11px] font-bold text-slate-700">{seg.durationFormatted}</span>
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
+                    <div className="text-[10px] text-slate-500 mt-0.5">
                       {new Date(seg.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })} — {new Date(seg.endTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                     </div>
                     {seg.type === 'STOPPED' && seg.address && (
-                      <div className="text-[11px] text-slate-400 mt-0.5">{seg.address}</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5 flex items-start gap-1">
+                        <MapPin size={10} className="shrink-0 mt-0.5" />{seg.address}
+                      </div>
                     )}
                     {seg.type === 'RUNNING' && (
                       <div className="text-[10px] text-slate-400 mt-0.5">
-                        {seg.distanceKm} km · avg {seg.avgSpeed} km/h · max {seg.maxSpeed} km/h
+                        {seg.distanceKm}km · avg {seg.avgSpeed} · max {seg.maxSpeed} km/h
                       </div>
                     )}
                   </div>
                 </div>
               ))}
+
+              {/* Bottom summary */}
+              <div className="p-3 bg-slate-50 text-center">
+                <div className="text-[10px] text-slate-400">
+                  {summary.stopCount} stops · {summary.totalStoppedFormatted} idle · {summary.totalDistanceKm}km · {summary.runningPercent}% utilised
+                </div>
+              </div>
             </div>
-          </div>
-        </>
+          )}
+        </div>
       )}
     </div>
   );
