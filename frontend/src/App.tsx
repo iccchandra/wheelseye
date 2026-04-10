@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import {
   MapPin, Package, Bell, Truck, Users, Fuel, Receipt, BarChart3,
   Settings, Shield, Clock, UserCircle, Globe, DollarSign, MapPinned,
-  ChevronLeft, ChevronRight, LogOut, Search, Menu,
+  ChevronLeft, ChevronRight, LogOut, Search, Menu, ScanLine,
 } from 'lucide-react';
 import { LoginPage }          from './pages/LoginPage';
 import { DashboardPage }      from './pages/DashboardPage';
@@ -25,6 +25,7 @@ import { SettingsPage }      from './pages/SettingsPage';
 import { UsersPage }         from './pages/UsersPage';
 import { StopsPage }         from './pages/StopsPage';
 import { GeofencePage }      from './pages/GeofencePage';
+import { AttendancePage }    from './pages/AttendancePage';
 import { ShipmentDetailPage } from './pages/ShipmentDetailPage';
 import { CustomerPortalPage } from './pages/CustomerPortalPage';
 
@@ -44,6 +45,7 @@ const NAV_SECTIONS = [
     { to: '/fuel',      label: 'Fuel',        icon: Fuel },
     { to: '/stops',     label: 'Stops',       icon: MapPinned },
     { to: '/geofence',  label: 'Geofence',    icon: Globe },
+    { to: '/attendance', label: 'Attendance',  icon: ScanLine },
   ]},
   { label: 'BUSINESS', items: [
     { to: '/customers', label: 'Customers',   icon: UserCircle },
@@ -165,6 +167,7 @@ export const App: React.FC = () => (
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/stops" element={<StopsPage />} />
                 <Route path="/geofence" element={<GeofencePage />} />
+                <Route path="/attendance" element={<AttendancePage />} />
               </Routes>
             </AppShell>
           </ProtectedRoute>
